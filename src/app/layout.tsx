@@ -26,12 +26,21 @@ export const metadata: Metadata = {
     siteName: "I Wayan Radea",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/banner_share.png",
+        width: 2048,
+        height: 768,
+        alt: "I Wayan Radea — Junior Full-Stack Developer",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "I Wayan Radea — Junior Full-Stack Developer",
     description:
       "Junior full-stack developer from Bali. I build web apps with React and Next.js, and I'm working on my own products, Portalink and Whip.",
+    images: ["/banner_share.png"],
   },
 };
 
