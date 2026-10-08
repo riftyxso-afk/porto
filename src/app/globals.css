@@ -1,0 +1,51 @@
+@import "tailwindcss" source(none);
+@source "..";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #09090b;
+    --border: #e4e4e7;
+    --muted: #71717a;
+  }
+
+  .dark {
+    --background: #09090b;
+    --foreground: #fafafa;
+    --border: #27272a;
+    --muted: #a1a1aa;
+  }
+
+  html {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-geist-sans, "Geist", system-ui, sans-serif);
+    overflow-x: clip;
+    max-width: 100vw;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.font-mono {
+  font-family: var(--font-geist-mono, "Geist Mono", monospace);
+}
+
+.font-handwriting {
+  font-family: var(--font-caveat, "Caveat", cursive);
+}
+
+/* Smooth hidden or minimal scrollbar on mobile horizontal containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
