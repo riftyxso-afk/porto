@@ -55,7 +55,7 @@ export const projects: ProjectItem[] = [
     title: "Portalink",
     description:
       "Cloud storage aggregator that puts Google Drive, Dropbox, OneDrive, Mega, and other accounts in one dashboard. Browse files across providers, move files between clouds, and keep folders in sync automatically.",
-    isLive: true,
+    status: "live",
     technologies: ["React", "Next.js", "Cloud APIs"],
     imageSrc: "/images/portalink.png",
     link: "https://portalink.cloud",
@@ -65,9 +65,20 @@ export const projects: ProjectItem[] = [
     title: "Whip",
     description:
       "AI super agent for development work, similar in idea to Orca IDE.",
-    isLive: true,
+    status: "development",
     technologies: ["AI Agents", "React", "Next.js"],
     imageSrc: "/images/whip.png",
+    link: "https://whip-app-697.netlify.app",
+  },
+  {
+    id: "eureka-ai",
+    title: "Eureka.AI",
+    description:
+      "Socratic AI tutor for Indonesian students. Turns YouTube links, web articles, and PDFs into per-chapter notes, quiz questions, and flashcards, then guides students to the answer instead of handing it over. Runs across OpenAI, Claude, DeepSeek, and NVIDIA so each task uses the model that fits.",
+    status: "live",
+    technologies: ["Next.js", "Multi-model AI", "PDF & Video Parsing"],
+    imageSrc: "/images/eureka.png",
+    link: "https://eureka-ai.web.id",
   },
 ];
 

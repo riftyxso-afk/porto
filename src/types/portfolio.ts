@@ -10,12 +10,14 @@ export interface ExperienceItem {
   skills: string[];
 }
 
+export type ProjectStatus = "live" | "development";
+
 export interface ProjectItem {
   id: string;
   title: string;
   description: string;
+  status: ProjectStatus;
   metric?: string;
-  isLive?: boolean;
   technologies: string[];
   imageSrc?: string;
   link?: string;
