@@ -1,12 +1,76 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Sparkles, ArrowUp, X, Bot, User } from "lucide-react";
 import { answerRadeaQuery } from "@/lib/radeaKnowledge";
 
+// Mocked retrieval: the answer is built synchronously from the CV, so this
+// delay is presentation only. 7.2s of skeleton plus the staggered reveal
+// below lands on about eight seconds end to end.
+const THINK_MS = 7200;
+const WORD_STAGGER_MS = 10;
+const WORD_STAGGER_CAP_MS = 500;
+
 interface Message {
+  id: number;
   role: "user" | "assistant";
   content: string;
+}
+
+// Shaped like the answer bubble it will become, so the swap at the end of
+// the wait does not jump the layout.
+function AnswerSkeleton() {
+  return (
+    <div className="flex gap-2" role="status" aria-live="polite">
+      <div className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-400 shrink-0 mt-0.5">
+        <Sparkles className="w-3 h-3" />
+      </div>
+      <div className="flex-1 min-w-0 p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60">
+        <div className="flex flex-col gap-2">
+          {["w-[92%]", "w-[78%]", "w-[54%]"].map((width) => (
+            <span
+              key={width}
+              className={`relative block h-2 rounded-full overflow-hidden bg-zinc-300/70 dark:bg-zinc-700/70 ${width}`}
+            >
+              <span className="absolute inset-0 animate-shimmer motion-reduce:animate-none bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.85),transparent)] dark:bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.14),transparent)]" />
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-2.5 flex items-center gap-2">
+          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            Menyusun jawaban dari CV
+          </span>
+          <span className="flex-1 h-px bg-zinc-300 dark:bg-zinc-700 overflow-hidden relative">
+            <span
+              className="absolute inset-y-0 left-0 w-full origin-left scale-x-0 bg-zinc-500 dark:bg-zinc-400 motion-reduce:animate-none"
+              style={{ animation: `scale-x-fill ${THINK_MS}ms linear forwards` }}
+            />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Words fade up in reading order. Newlines stay inside their own span so the
+// bubble's existing whitespace-pre-line still breaks the lines.
+function RevealedText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(" ").map((word, i) => (
+        <span
+          key={i}
+          className="inline animate-rise-in motion-reduce:animate-none"
+          style={{
+            animationDelay: `${Math.min(i * WORD_STAGGER_MS, WORD_STAGGER_CAP_MS)}ms`,
+          }}
+        >
+          {word}{" "}
+        </span>
+      ))}
+    </>
+  );
 }
 
 export function FloatingAskBar() {
@@ -14,28 +78,49 @@ export function FloatingAskBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: 0,
       role: "assistant",
       content:
         "Halo! Saya asisten AI I Wayan Radea. Anda dapat menanyakan seputar keahlian, pengalaman freelance, proyek (Portalink & Whip), atau kontak Radea berdasarkan CV.",
     },
   ]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [revealingId, setRevealingId] = useState<number | null>(null);
+  const nextId = useRef(1);
+  const thinkTimer = useRef<number | undefined>(undefined);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => () => window.clearTimeout(thinkTimer.current), []);
+
+  // Keep the newest message in view. The answer runs longer than the panel,
+  // so without this its opening lines sit above the fold unread.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, isThinking]);
 
   const ask = (text: string) => {
     const q = text.trim();
     if (!q) return;
 
-    setIsOpen(true);
-    const userMsg: Message = { role: "user", content: q };
-    setMessages((prev) => [...prev, userMsg]);
-    setQuery("");
-    setIsLoading(true);
+    window.clearTimeout(thinkTimer.current);
+    const userId = nextId.current++;
 
-    setTimeout(() => {
-      const answer = answerRadeaQuery(q);
-      setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
-      setIsLoading(false);
-    }, 350);
+    setIsOpen(true);
+    setMessages((prev) => [...prev, { id: userId, role: "user", content: q }]);
+    setQuery("");
+    setRevealingId(null);
+    setIsThinking(true);
+
+    thinkTimer.current = window.setTimeout(() => {
+      const answerId = nextId.current++;
+      setMessages((prev) => [
+        ...prev,
+        { id: answerId, role: "assistant", content: answerRadeaQuery(q) },
+      ]);
+      setRevealingId(answerId);
+      setIsThinking(false);
+    }, THINK_MS);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,10 +162,13 @@ export function FloatingAskBar() {
           </div>
 
           {/* Messages scroll area */}
-          <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1 text-xs">
-            {messages.map((msg, i) => (
+          <div
+            ref={scrollerRef}
+            className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1 text-xs"
+          >
+            {messages.map((msg) => (
               <div
-                key={i}
+                key={msg.id}
                 className={`flex gap-2 ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
@@ -97,7 +185,11 @@ export function FloatingAskBar() {
                       : "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 border border-zinc-200/60 dark:border-zinc-700/60"
                   }`}
                 >
-                  {msg.content}
+                  {msg.id === revealingId ? (
+                    <RevealedText text={msg.content} />
+                  ) : (
+                    msg.content
+                  )}
                 </div>
                 {msg.role === "user" && (
                   <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300 shrink-0 mt-0.5">
@@ -107,12 +199,7 @@ export function FloatingAskBar() {
               </div>
             ))}
 
-            {isLoading && (
-              <div className="flex items-center gap-2 text-zinc-400 italic">
-                <Sparkles className="w-3 h-3 animate-spin" />
-                <span>Mencari jawaban dari CV...</span>
-              </div>
-            )}
+            {isThinking && <AnswerSkeleton />}
           </div>
 
           {/* Quick suggestions */}
