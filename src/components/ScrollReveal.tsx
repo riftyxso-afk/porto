@@ -50,6 +50,11 @@ export default function ScrollReveal({
 }: ScrollRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // The parent passes a new callback on every render. Reading it through a ref
+  // keeps it out of the effect deps, so a completion cannot restart the tween.
+  const onRevealCompleteRef = useRef(onRevealComplete);
+  onRevealCompleteRef.current = onRevealComplete;
+
   // Plain strings split into words. Elements (a link, a logo) cannot be split,
   // so each one rides as a single word and animates as a unit. Fragments are
   // flattened rather than treated as elements, otherwise a paragraph built from
@@ -142,7 +147,7 @@ export default function ScrollReveal({
             stagger: 0.045,
             ease: "power2.out",
             // With a stagger, onComplete fires after the last word settles, not the first.
-            onComplete: onRevealComplete,
+            onComplete: () => onRevealCompleteRef.current?.(),
           },
         );
       }, el);
@@ -212,7 +217,6 @@ export default function ScrollReveal({
     playOnLoad,
     rotationEnd,
     wordAnimationEnd,
-    onRevealComplete,
   ]);
 
   return (
