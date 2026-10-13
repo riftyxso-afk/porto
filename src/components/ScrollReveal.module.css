@@ -1,0 +1,13 @@
+/* Structural only. Typography comes from the caller via textClassName, so the
+   same component can reveal 15px body copy or a display headline. */
+.container {
+  width: 100%;
+}
+
+.text {
+  margin: 0;
+}
+
+.word {
+  display: inline-block;
+}

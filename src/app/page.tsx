@@ -1,75 +1,52 @@
 import React from "react";
 import { Header } from "@/components/Header";
+import { Intro } from "@/components/Intro";
 import { SocialNav } from "@/components/SocialNav";
 import { InfoBar } from "@/components/InfoBar";
 import { Experience } from "@/components/Experience";
 import { Projects } from "@/components/Projects";
+import { CurrentlyBuilding } from "@/components/CurrentlyBuilding";
 import { Stack } from "@/components/Stack";
 import { Education } from "@/components/Education";
 import { GithubGraph } from "@/components/GithubGraph";
 import { ContactFooter } from "@/components/ContactFooter";
-import { SectionDivider } from "@/components/SectionDivider";
-import { FloatingAskBar } from "@/components/FloatingAskBar";
+import { Dock } from "@/components/Dock";
+import { StoryGate } from "@/components/StoryGate";
 
 export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start overflow-x-clip bg-white dark:bg-zinc-950">
-      {/* Central 768px Portfolio Column */}
-      <main className="w-full max-w-[768px] bg-white dark:bg-zinc-900 border-x-0 sm:border-x border-zinc-200 dark:border-zinc-800 relative flex flex-col my-0 pb-16">
+      {/* Central 600px Portfolio Column */}
+      <main className="w-full max-w-[600px] bg-white dark:bg-zinc-950 relative flex flex-col my-0 pb-28">
         {/* Profile Header */}
         <Header />
 
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* Social Navigation with 'follow me' annotation */}
+        {/* Social links with 'follow me' annotation */}
         <SocialNav />
-
-        {/* Continuous horizontal line between Nav and InfoBar */}
-        <div className="hidden sm:block w-screen absolute left-1/2 -translate-x-1/2 h-[1px] bg-zinc-200 dark:bg-zinc-800 pointer-events-none" />
 
         {/* Status & Live Info */}
         <InfoBar />
 
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
+        {/* Intro */}
+        <Intro />
 
-        {/* Experience Section */}
-        <Experience />
-
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* Projects Showcase */}
-        <Projects />
-
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* Tech Stack */}
-        <Stack />
-
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* Education */}
-        <Education />
-
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* GitHub Heatmap */}
-        <GithubGraph />
-
-        {/* Diagonal Hatch Stripe Bar */}
-        <SectionDivider />
-
-        {/* Contact & Footer */}
-        <ContactFooter />
+        {/* Story is read on scroll; the sections below stay hidden until it is read */}
+        <StoryGate>
+          {/* Sections are separated by spacing alone */}
+          <div className="flex flex-col gap-14 mt-6">
+            <CurrentlyBuilding />
+            <Experience />
+            <Projects />
+            <Stack />
+            <Education />
+            <GithubGraph />
+            <ContactFooter />
+          </div>
+        </StoryGate>
       </main>
 
-      {/* Floating Ask Pill */}
-      <FloatingAskBar />
+      {/* Dock of AI tools, hidden until the story has been read */}
+      <Dock />
     </div>
   );
 }

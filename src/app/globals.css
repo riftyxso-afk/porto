@@ -6,16 +6,24 @@
 @layer base {
   :root {
     --background: #ffffff;
-    --foreground: #09090b;
-    --border: #e4e4e7;
-    --muted: #71717a;
+    --foreground: #202020;
+    --secondary: #626262;
+    --border: #e9e9e9;
+    --surface: #f8f8f8;
+    --muted: #727272;
+    --annotation: #4668ce;
+    --action-green: #4b8050;
   }
 
   .dark {
     --background: #09090b;
     --foreground: #fafafa;
+    --secondary: #a1a1aa;
     --border: #27272a;
+    --surface: #18181b;
     --muted: #a1a1aa;
+    --annotation: #9bb1ff;
+    --action-green: #ace1af;
   }
 
   html {
@@ -26,10 +34,16 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-geist-sans, "Geist", system-ui, sans-serif);
+    font-family: var(--font-figtree, "Figtree", system-ui, sans-serif);
     overflow-x: clip;
     max-width: 100vw;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-bricolage, "Bricolage Grotesque", system-ui, sans-serif);
   }
 }
 
@@ -88,4 +102,151 @@
 
 .animate-rise-in {
   animation: rise-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Like button. The burst fires on every click, the beat only while liked, so
+   the resting state is still. */
+@keyframes heart-burst {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(1.32);
+  }
+  46% {
+    transform: scale(0.94);
+  }
+  64% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.14);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  56% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-burst {
+  animation: heart-burst 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-heart-beat {
+  animation: heart-beat 1.8s ease-in-out infinite;
+}
+
+/* Hand-drawn ring around a link. The SVG ellipse is traced on hover or focus:
+   its stroke-dashoffset runs from the full perimeter to zero, so the ring draws
+   itself around the word and then stays. The pathLength="1" attribute on the
+   ellipse lets one set of numbers serve every link regardless of its size. */
+.link-circle {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  isolation: isolate;
+}
+
+.link-circle > .link-circle-ring {
+  position: absolute;
+  inset: -0.35em -0.6em;
+  width: calc(100% + 1.2em);
+  height: calc(100% + 0.7em);
+  overflow: visible;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.link-circle > .link-circle-ring ellipse {
+  fill: none;
+  stroke: var(--annotation);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 620ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.link-circle.is-drawn > .link-circle-ring ellipse,
+.link-circle:focus-visible > .link-circle-ring ellipse {
+  stroke-dashoffset: 0;
+}
+
+/* Highlighter stroke for Whip: a sky-blue marker band behind the word at low
+   opacity, so the text stays the strongest thing on the line. It wipes in from
+   the start edge once the text above has settled. */
+.link-highlight {
+  background-image: linear-gradient(rgb(125 211 252 / 0.35), rgb(125 211 252 / 0.35));
+  background-repeat: no-repeat;
+  background-size: 0% 42%;
+  background-position: 0 88%;
+  transition: background-size 620ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.link-highlight.is-drawn {
+  background-size: 100% 42%;
+}
+
+.link-highlight > .link-circle-ring {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The ring still appears once the text settles, just without the trace. */
+  .link-circle > .link-circle-ring ellipse {
+    transition: none;
+  }
+
+  .link-highlight {
+    transition: none;
+  }
+}
+
+/* Theme switch: the new theme grows as a circle from the toggle button.
+   Only runs when the View Transitions API is available and motion is allowed. */
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0px at var(--theme-x) var(--theme-y));
+  }
+  to {
+    clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: theme-reveal 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  .animate-heart-burst,
+  .animate-heart-beat,
+  .animate-shimmer,
+  .animate-rise-in {
+    animation: none;
+  }
 }

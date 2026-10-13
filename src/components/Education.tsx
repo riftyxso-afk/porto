@@ -43,7 +43,7 @@ export function Education() {
                 {edu.courses.map((course) => (
                   <span
                     key={course}
-                    className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300"
+                    className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[var(--surface)] border border-[var(--border)] text-[var(--secondary)]"
                   >
                     {course}
                   </span>

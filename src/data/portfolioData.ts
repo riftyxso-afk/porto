@@ -57,7 +57,7 @@ export const projects: ProjectItem[] = [
       "Cloud storage aggregator that puts Google Drive, Dropbox, OneDrive, Mega, and other accounts in one dashboard. Browse files across providers, move files between clouds, and keep folders in sync automatically.",
     status: "live",
     technologies: ["React", "Next.js", "Cloud APIs"],
-    imageSrc: "/images/portalink.png",
+    imageSrc: "/images/portalink-logo.png",
     link: "https://portalink.cloud",
   },
   {
@@ -67,7 +67,7 @@ export const projects: ProjectItem[] = [
       "AI super agent for development work, similar in idea to Orca IDE.",
     status: "development",
     technologies: ["AI Agents", "React", "Next.js"],
-    imageSrc: "/images/whip.png",
+    imageSrc: "/images/whip-logo.png",
     link: "https://whip-app-697.netlify.app",
   },
   {

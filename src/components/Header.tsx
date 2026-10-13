@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useRef } from "react";
+import { play } from "cuelume";
+import { useTheme } from "next-themes";
 import { ThemeToggle } from "./ThemeToggle";
+import { SoundToggle } from "./SoundToggle";
+import DitherVeil from "./DitherVeil";
 import { personalInfo } from "@/data/portfolioData";
+import { tagline } from "@/data/content";
 
 const titles = [
   "Junior Full-Stack Developer",
@@ -16,6 +20,7 @@ const titles = [
 function RotatingTitle() {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
+  const first = useRef(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,6 +28,11 @@ function RotatingTitle() {
       setTimeout(() => {
         setIndex((prev) => (prev + 1) % titles.length);
         setFade(true);
+
+        // The title swaps every 2.8s forever, so it stays silent. One faint cue
+        // on the first swap is enough to notice the rotation without nagging.
+        if (first.current) first.current = false;
+        else play("select", { emphasis: "subtle", volume: 0.35 });
       }, 350);
     }, 2800);
     return () => clearInterval(interval);
@@ -41,31 +51,49 @@ function RotatingTitle() {
   );
 }
 
+function DitherAvatar() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <div
+      role="img"
+      aria-label={personalInfo.name}
+      className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950"
+    >
+      <DitherVeil
+        src="/images/avatar-dither.png"
+        fit="contain"
+        pattern="floyd"
+        pixelSize={1.5}
+        inkColor={isDark ? "#09090b" : "#18181b"}
+        paperColor={isDark ? "#fafafa" : "#ffffff"}
+        contrast={1.35}
+        revealRadius={70}
+        softness={0.7}
+        linger={1.2}
+        wander
+      />
+    </div>
+  );
+}
+
 export function Header() {
   return (
     <header className="w-full pt-12 sm:pt-14 pb-5 px-4 relative">
-      <div className="absolute right-4 top-4 z-10">
+      <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+        <SoundToggle />
         <ThemeToggle />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3.5 sm:gap-4 items-start">
         {/* Avatar with face centered */}
-        <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xs bg-zinc-100 dark:bg-zinc-800">
-          <Image
-            src={personalInfo.avatarUrl}
-            alt={personalInfo.name}
-            width={96}
-            height={96}
-            unoptimized
-            className="w-full h-full object-cover object-[center_35%] scale-125"
-            priority
-          />
-        </div>
+        <DitherAvatar />
 
         {/* Info */}
         <div className="flex-1 flex flex-col gap-1.5 pt-0.5 w-full">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-[27px] leading-8 font-medium tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-[32px] sm:text-[42px] leading-tight font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               {personalInfo.name}
             </h1>
             {/* Verified checkmark badge */}
@@ -81,18 +109,8 @@ export function Header() {
           {/* Smoothly Rotating Title */}
           <RotatingTitle />
 
-          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 max-w-xl">
-            Junior full-stack developer from Bali. I build web apps with React and Next.js,
-            and I&apos;m working on my own products,{" "}
-            <a
-              href="https://portalink.cloud"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-900 dark:text-zinc-100 underline underline-offset-4 decoration-zinc-400 dark:decoration-zinc-500 hover:decoration-zinc-800 dark:hover:decoration-zinc-200 font-medium"
-            >
-              Portalink
-            </a>{" "}
-            and Whip.
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {tagline}
           </p>
         </div>
       </div>

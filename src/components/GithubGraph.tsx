@@ -97,7 +97,7 @@ export function GithubGraph() {
         </div>
 
         {/* Footer info & legend */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-2 text-xs text-[var(--muted)]">
           <span className="font-normal">550 contributions in the last year</span>
 
           <div className="flex items-center gap-1.5 font-mono">

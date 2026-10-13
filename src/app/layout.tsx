@@ -1,6 +1,32 @@
 import type { Metadata } from "next";
+import { Figtree, Bricolage_Grotesque, Caveat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SoundProvider } from "@/components/SoundProvider";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-figtree",
+  display: "swap",
+});
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "I Wayan Radea — Junior Full-Stack Developer",
@@ -50,19 +76,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${figtree.variable} ${bricolage.variable} ${caveat.variable} ${geistMono.variable}`}
+    >
       <body className="antialiased min-h-screen bg-zinc-50/50 dark:bg-zinc-950 transition-colors duration-200">
         <ThemeProvider
           attribute="class"
@@ -70,7 +88,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SoundProvider>
+            {children}
+          </SoundProvider>
         </ThemeProvider>
       </body>
     </html>

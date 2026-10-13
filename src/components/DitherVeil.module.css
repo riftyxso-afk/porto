@@ -1,0 +1,9 @@
+/* The veil fills its box and clips the canvas it appends. touch-action keeps
+   vertical page scrolling alive over a pointer-tracked canvas. */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+}

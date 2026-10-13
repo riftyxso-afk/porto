@@ -60,9 +60,6 @@ export function Experience() {
 
               {/* Timeline container */}
               <div className="relative">
-                {/* Curved tree line: vertical stem that curves 90° right into the tags */}
-                <div className="absolute left-[11px] top-0 bottom-[11px] w-4 border-l border-b border-zinc-200 dark:border-zinc-800 rounded-bl-lg pointer-events-none" />
-
                 {/* Role and content indented */}
                 <div className="pl-7 flex flex-col">
                   {/* Role button */}
