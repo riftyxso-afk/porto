@@ -771,7 +771,7 @@ export function RecapDashboard() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-3.5 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-zinc-200 px-4 sm:px-6 py-3.5 dark:border-zinc-800">
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className="h-3.5 w-3.5 rounded-full shrink-0"
@@ -819,7 +819,7 @@ export function RecapDashboard() {
             </div>
 
             {/* Inspector Navigation Tabs: Web Viewports + Specs */}
-            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/80 px-6 py-2 overflow-x-auto dark:border-zinc-800 dark:bg-zinc-950/50">
+            <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/80 px-4 sm:px-6 py-2 overflow-x-auto dark:border-zinc-800 dark:bg-zinc-950/50">
               <div className="flex items-center gap-2">
                 {inspectedProject.webPreviews.map((prev, idx) => (
                   <button
@@ -871,9 +871,9 @@ export function RecapDashboard() {
             </div>
 
             {/* Modal Body: Two column layout with Live Preview or Docs and Project Specs */}
-            <div className="grid flex-1 grid-cols-1 md:grid-cols-3 overflow-hidden">
+            <div className="grid flex-1 grid-cols-1 md:grid-cols-3 overflow-y-auto md:overflow-hidden">
               {/* Primary Content View: Interactive Viewport or Code */}
-              <div className="col-span-2 flex flex-col border-r border-zinc-200 dark:border-zinc-800 overflow-hidden bg-zinc-100/50 dark:bg-zinc-950/50">
+              <div className="col-span-1 md:col-span-2 flex flex-col border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 h-[380px] md:h-full shrink-0 md:shrink overflow-hidden bg-zinc-100/50 dark:bg-zinc-950/50">
                 {inspectMode === "viewport" ? (
                   <div className="flex flex-col h-full">
                     {/* Simulated Browser Address Bar */}

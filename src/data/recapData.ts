@@ -593,7 +593,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
     modelName: "GPT-6 Astra",
     description:
       "Rekreasi lokal dari website sinematik pear.no. Menjalankan scroll-driven films beresolusi tinggi, navigasi babak WebGL, dan simulasi form kontak lokal tanpa dependensi eksternal.",
-    previewUrl: "/benchmarks/pear/",
+    previewUrl: "https://pear-cinematic-web.vercel.app",
     previewType: "direct",
     techStack: ["Vanilla JavaScript", "WebGL Canvas", "Node.js 18+", "CSS3 Perspective", "Zero npm Packages"],
     metrics: [
@@ -619,7 +619,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
         tag: "WebGL Film Player",
         description: "Streaming frame film beresolusi tinggi yang digerakkan secara presisi oleh posisi scroll pengguna.",
         accentColor: "#f59e0b",
-        previewRoute: "/benchmarks/pear/",
+        previewRoute: "https://pear-cinematic-web.vercel.app",
         features: ["3 Modes: Reveal, Signal, Colossus", "CSS3 perspective canvas", "Zero external packages"],
       },
       {
@@ -629,7 +629,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
         tag: "Interactive Story",
         description: "Navigasi babak film interaktif dan formulir kontak lokal dengan validasi instant preview.",
         accentColor: "#d97706",
-        previewRoute: "/benchmarks/pear/",
+        previewRoute: "https://pear-cinematic-web.vercel.app",
         features: ["Interactive act timeline", "Offline submission viewer", "Standalone runtime"],
       },
     ],
@@ -672,7 +672,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
     modelName: "GPT-6 Astra",
     description:
       "Rekreasi lokal dari rilis produk global Shopify Editions Winter 2026. Menggunakan 1.45 MB bundel HTML dan CSS orisinal dengan runtime terpatch untuk eksekusi lokal tanpa dependensi backend eksternal.",
-    previewUrl: "/benchmarks/shopify-editions/",
+    previewUrl: "https://shopify-editions-winter-2026.vercel.app/editions/winter2026",
     previewType: "direct",
     techStack: ["HTML5", "CSS3", "JavaScript ES Modules", "Node.js Dev Server", "Asset Inventory Tooling"],
     metrics: [
@@ -698,7 +698,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
         tag: "Enterprise Showcase",
         description: "Tampilan rilis produk global Shopify Editions Winter 2026 dengan animasi CSS3 dan tata letak modular.",
         accentColor: "#10b981",
-        previewRoute: "/benchmarks/shopify-editions/",
+        previewRoute: "https://shopify-editions-winter-2026.vercel.app/editions/winter2026",
         features: ["1.45 MB standalone HTML", "Offline patched runtime", "Enterprise design system"],
       },
       {
@@ -708,7 +708,7 @@ export const RECAP_PROJECTS: RecapProject[] = [
         tag: "Interactive Modules",
         description: "Katalog pembaruan produk, visualisasi inventaris logistik, dan kartu interaktif dengan tipografi orisinal.",
         accentColor: "#059669",
-        previewRoute: "/benchmarks/shopify-editions/",
+        previewRoute: "https://shopify-editions-winter-2026.vercel.app/editions/winter2026",
         features: ["Custom web font suite", "Asset integrity checked", "Zero external analytics"],
       },
     ],
