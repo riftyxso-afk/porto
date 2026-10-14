@@ -404,21 +404,17 @@ export default function DecryptedText({
     };
   }, [animateOn, hasAnimated, triggerDecrypt]);
 
-  // The replay trigger. Skips the first pass on purpose: the label should be
-  // sitting there readable when the page loads, and scramble only when the
-  // reader actually switches language.
+  // The replay trigger. `replayKey` 0 is the initial paint: the parent has not
+  // asked for a decrypt yet, so the text sits there readable and only scrambles
+  // once the reader switches language.
   //
-  // It also owns the reset effect below in replay mode. Both run on the same
-  // render when the language changes, and a plain-text reset landing after the
-  // scramble starts would cancel it on the first frame.
-  const replayedOnce = useRef(false);
-
+  // Every value above 0 is a request, and it runs on mount too. The guard used
+  // to be "have I ever run", which silently ate the very first switch: the intro
+  // mounts these components for the first time exactly when `swapped` flips, so
+  // the one animation the reader asked for was the one that got skipped. Counting
+  // the key instead means a component that mounts on a later switch still plays.
   useEffect(() => {
-    if (animateOn !== "replay") return;
-    if (!replayedOnce.current) {
-      replayedOnce.current = true;
-      return;
-    }
+    if (animateOn !== "replay" || replayKey === 0) return;
     // A parent stagger: the block waits its turn rather than starting with the
     // rest of the paragraph, so the decrypt reads as one wave moving through.
     if (delay > 0) {
