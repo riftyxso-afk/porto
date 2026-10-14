@@ -31,7 +31,6 @@ import {
   ShieldCheck,
   Maximize2,
   Globe,
-  Code2,
 } from "lucide-react";
 
 export function RecapDashboard() {
@@ -67,10 +66,7 @@ export function RecapDashboard() {
   // Selected project & viewport for inspect modal
   const [inspectedProject, setInspectedProject] = useState<RecapProject | null>(null);
   const [activePreviewIndex, setActivePreviewIndex] = useState<number>(0);
-  const [inspectMode, setInspectMode] = useState<"viewport" | "docs">("viewport");
-  const [activeDocIndex, setActiveDocIndex] = useState<number>(0);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const [copiedCode, setCopiedCode] = useState<boolean>(false);
 
   // Close modal on Escape key (R-26, R-32)
   useEffect(() => {
@@ -79,8 +75,6 @@ export function RecapDashboard() {
       if (e.key === "Escape") {
         setInspectedProject(null);
         setActivePreviewIndex(0);
-        setActiveDocIndex(0);
-        setCopiedCode(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -90,7 +84,8 @@ export function RecapDashboard() {
   // Folder open state tracking per project
   const [folderOpenStates, setFolderOpenStates] = useState<Record<string, boolean>>({
     capys: true,
-    "pulau-pelan": true,
+    "pear-recreation": true,
+    "shopify-editions": true,
   });
 
   const toggleFolder = useCallback((id: string) => {
@@ -135,31 +130,19 @@ export function RecapDashboard() {
     setTimeout(() => setCopiedPath(null), 2000);
   };
 
-  // Copy code handler
-  const handleCopyCode = (content: string) => {
-    navigator.clipboard.writeText(content);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
-  };
-
   // Open inspection modal focused on a web preview
   const openInspector = (
     project: RecapProject,
-    previewIndex: number = 0,
-    mode: "viewport" | "docs" = "viewport"
+    previewIndex: number = 0
   ) => {
     setInspectedProject(project);
     setActivePreviewIndex(previewIndex);
-    setActiveDocIndex(0);
-    setInspectMode(mode);
   };
 
   // Close inspector modal
   const closeInspector = () => {
     setInspectedProject(null);
     setActivePreviewIndex(0);
-    setActiveDocIndex(0);
-    setCopiedCode(false);
   };
 
   return (
@@ -449,7 +432,7 @@ export function RecapDashboard() {
                   key={preview.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    openInspector(project, previewIdx, "viewport");
+                    openInspector(project, previewIdx);
                   }}
                   className="group/sheet flex h-full flex-col justify-between rounded-lg border border-zinc-200/90 bg-white p-2.5 text-left select-none shadow-2xs hover:border-zinc-400 dark:border-zinc-700/80 dark:bg-zinc-900 transition-colors cursor-pointer"
                 >
@@ -655,7 +638,7 @@ export function RecapDashboard() {
 
                       <button
                         type="button"
-                        onClick={() => openInspector(project, 0, "viewport")}
+                        onClick={() => openInspector(project, 0)}
                         className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
                       >
                         <span>{t.recap.inspect}</span>
@@ -744,7 +727,7 @@ export function RecapDashboard() {
                         </a>
                         <button
                           type="button"
-                          onClick={() => openInspector(p, 0, "viewport")}
+                          onClick={() => openInspector(p, 0)}
                           className="rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                         >
                           {t.recap.inspect}
@@ -818,19 +801,16 @@ export function RecapDashboard() {
               </div>
             </div>
 
-            {/* Inspector Navigation Tabs: Web Viewports + Specs */}
+            {/* Inspector Navigation Tabs: Web Viewports */}
             <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50/80 px-4 sm:px-6 py-2 overflow-x-auto dark:border-zinc-800 dark:bg-zinc-950/50">
               <div className="flex items-center gap-2">
                 {inspectedProject.webPreviews.map((prev, idx) => (
                   <button
                     key={prev.id}
                     type="button"
-                    onClick={() => {
-                      setActivePreviewIndex(idx);
-                      setInspectMode("viewport");
-                    }}
+                    onClick={() => setActivePreviewIndex(idx)}
                     className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-medium transition-colors ${
-                      inspectMode === "viewport" && activePreviewIndex === idx
+                      activePreviewIndex === idx
                         ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700"
                         : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
                     }`}
@@ -842,136 +822,58 @@ export function RecapDashboard() {
                     </span>
                   </button>
                 ))}
-
-                {inspectedProject.documents.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInspectMode("docs");
-                      setActiveDocIndex(0);
-                    }}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-medium transition-colors ${
-                      inspectMode === "docs"
-                        ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700"
-                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
-                    }`}
-                  >
-                    <Code2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                    <span>Architecture Files</span>
-                    <span className="rounded bg-zinc-100 px-1 py-0.5 text-[9px] text-zinc-500 dark:bg-zinc-900">
-                      {inspectedProject.documents.length}
-                    </span>
-                  </button>
-                )}
               </div>
 
               <span className="text-[11px] font-mono text-zinc-400 hidden md:inline">
-                {inspectMode === "viewport" ? "Live Embedded Viewport" : "Source Blueprint"}
+                Live Embedded Viewport
               </span>
             </div>
 
-            {/* Modal Body: Two column layout with Live Preview or Docs and Project Specs */}
+            {/* Modal Body: Two column layout with Live Preview and Project Specs */}
             <div className="grid flex-1 grid-cols-1 md:grid-cols-3 overflow-y-auto md:overflow-hidden">
-              {/* Primary Content View: Interactive Viewport or Code */}
+              {/* Primary Content View: Interactive Web Viewport */}
               <div className="col-span-1 md:col-span-2 flex flex-col border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 h-[380px] md:h-full shrink-0 md:shrink overflow-hidden bg-zinc-100/50 dark:bg-zinc-950/50">
-                {inspectMode === "viewport" ? (
-                  <div className="flex flex-col h-full">
-                    {/* Simulated Browser Address Bar */}
-                    <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-                      <div className="flex items-center gap-2 flex-1 max-w-md">
-                        <div className="flex items-center gap-1.5">
-                          <span className="h-2.5 w-2.5 rounded-full bg-rose-400 inline-block" />
-                          <span className="h-2.5 w-2.5 rounded-full bg-amber-400 inline-block" />
-                          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 inline-block" />
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-1 rounded-md bg-zinc-100 px-2.5 py-1 text-[11px] font-mono text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          <Globe className="h-3 w-3 text-emerald-500 shrink-0" />
-                          <span className="truncate">
-                            https://{inspectedProject.webPreviews[activePreviewIndex]?.urlBadge || "benchmark.local"}
-                          </span>
-                        </div>
+                <div className="flex flex-col h-full">
+                  {/* Simulated Browser Address Bar */}
+                  <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="flex items-center gap-2 flex-1 max-w-md">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-400 inline-block" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-400 inline-block" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 inline-block" />
                       </div>
-
-                      <a
-                        href={inspectedProject.webPreviews[activePreviewIndex]?.previewRoute || inspectedProject.previewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        <Maximize2 className="h-3 w-3" />
-                        <span>Open in tab</span>
-                      </a>
-                    </div>
-
-                    {/* Live Preview Iframe Frame */}
-                    <div className="relative flex-1 bg-zinc-900 overflow-hidden">
-                      <iframe
-                        src={
-                          inspectedProject.webPreviews[activePreviewIndex]?.previewRoute ||
-                          inspectedProject.previewUrl
-                        }
-                        className="h-full w-full border-0 bg-white dark:bg-zinc-950"
-                        title={inspectedProject.webPreviews[activePreviewIndex]?.title || inspectedProject.title}
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col h-full">
-                    {/* Document Selector Sub-bar */}
-                    <div className="flex items-center justify-between border-b border-zinc-200/60 bg-zinc-100/60 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <div className="flex items-center gap-1.5 overflow-x-auto">
-                        {inspectedProject.documents.map((doc, idx) => (
-                          <button
-                            key={doc.id}
-                            type="button"
-                            onClick={() => {
-                              setActiveDocIndex(idx);
-                              setCopiedCode(false);
-                            }}
-                            className={`rounded px-2 py-1 font-mono text-[11px] transition-colors ${
-                              activeDocIndex === idx
-                                ? "bg-white font-semibold text-zinc-900 shadow-2xs dark:bg-zinc-800 dark:text-zinc-100"
-                                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
-                            }`}
-                          >
-                            {doc.name}
-                          </button>
-                        ))}
+                      <div className="flex items-center gap-1.5 flex-1 rounded-md bg-zinc-100 px-2.5 py-1 text-[11px] font-mono text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        <Globe className="h-3 w-3 text-emerald-500 shrink-0" />
+                        <span className="truncate">
+                          https://{inspectedProject.webPreviews[activePreviewIndex]?.urlBadge || "benchmark.local"}
+                        </span>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleCopyCode(
-                            inspectedProject.documents[activeDocIndex]?.content || ""
-                          )
-                        }
-                        className="inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-[11px] text-zinc-600 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                      >
-                        {copiedCode ? (
-                          <>
-                            <Check className="h-3 w-3 text-emerald-500" />
-                            <span className="text-emerald-600 dark:text-emerald-400">
-                              Copied
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3 w-3" />
-                            <span>Copy snippet</span>
-                          </>
-                        )}
-                      </button>
                     </div>
 
-                    <div className="flex-1 overflow-auto p-4 bg-zinc-950 font-mono text-xs text-zinc-200 leading-relaxed">
-                      <pre className="whitespace-pre-wrap break-all">
-                        {inspectedProject.documents[activeDocIndex]?.content}
-                      </pre>
-                    </div>
+                    <a
+                      href={inspectedProject.webPreviews[activePreviewIndex]?.previewRoute || inspectedProject.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      <Maximize2 className="h-3 w-3" />
+                      <span>Open in tab</span>
+                    </a>
                   </div>
-                )}
+
+                  {/* Live Preview Iframe Frame */}
+                  <div className="relative flex-1 bg-zinc-900 overflow-hidden">
+                    <iframe
+                      src={
+                        inspectedProject.webPreviews[activePreviewIndex]?.previewRoute ||
+                        inspectedProject.previewUrl
+                      }
+                      className="h-full w-full border-0 bg-white dark:bg-zinc-950"
+                      title={inspectedProject.webPreviews[activePreviewIndex]?.title || inspectedProject.title}
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Project Specs & Highlights Sidebar */}
