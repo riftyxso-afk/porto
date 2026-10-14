@@ -2,22 +2,10 @@
 
 import React, { useMemo } from "react";
 import { SectionHeader } from "./SectionDivider";
+import { useT } from "@/i18n/LanguageProvider";
 
 export function GithubGraph() {
-  const months = [
-    "Oct",
-    "Nov",
-    "Dec",
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-  ];
+  const t = useT();
 
   // Deterministic contribution grid mimicking the exact pattern
   const grid = useMemo(() => {
@@ -64,7 +52,7 @@ export function GithubGraph() {
 
   return (
     <section className="w-full relative">
-      <SectionHeader title="GitHub" />
+      <SectionHeader title={t.sections.github} />
 
       <div className="p-4 flex flex-col gap-3">
         {/* Overflow scroll container for the heatmap with smooth touch scrolling */}
@@ -72,7 +60,7 @@ export function GithubGraph() {
           <div className="min-w-[660px] flex flex-col gap-2">
             {/* Months row */}
             <div className="flex justify-between text-xs font-mono text-zinc-400 dark:text-zinc-500 pr-2 select-none">
-              {months.map((m) => (
+              {t.github.months.map((m) => (
                 <span key={m}>{m}</span>
               ))}
             </div>
@@ -84,7 +72,7 @@ export function GithubGraph() {
                   {week.map((level, dIdx) => (
                     <div
                       key={dIdx}
-                      title={`Activity level: ${level}`}
+                      title={`${t.github.activityLevel}: ${level}`}
                       className={`w-[9px] h-[9px] rounded-[2px] transition-colors ${getCellColor(
                         level
                       )}`}
@@ -98,16 +86,16 @@ export function GithubGraph() {
 
         {/* Footer info & legend */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-2 text-xs text-[var(--muted)]">
-          <span className="font-normal">550 contributions in the last year</span>
+          <span className="font-normal">{t.github.contributions}</span>
 
           <div className="flex items-center gap-1.5 font-mono">
-            <span>Less</span>
+            <span>{t.github.less}</span>
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-100 dark:bg-zinc-800/40" />
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-200 dark:bg-zinc-800" />
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-400 dark:bg-zinc-600" />
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-600 dark:bg-zinc-400" />
             <span className="w-2.5 h-2.5 rounded-[2px] bg-zinc-900 dark:bg-zinc-100" />
-            <span>More</span>
+            <span>{t.github.more}</span>
           </div>
         </div>
       </div>

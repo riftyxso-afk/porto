@@ -40,13 +40,3 @@ export interface EducationItem {
   period: string;
   courses?: string[];
 }
-
-export interface BlogPostItem {
-  id: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  tags: string[];
-  slug: string;
-  coverImage?: string;
-}
