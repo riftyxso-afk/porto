@@ -30,7 +30,7 @@ const MASK_SCALE = 0.5;
 const MAX_BURSTS = 4;
 const BURST_SECONDS = 1.2;
 const HOLD = 1.6;
-const INTRO_MS = 1100;
+const INTRO_MS = 1600;
 
 const hexToRgb = (hex: string): [number, number, number] => {
   let h = String(hex || '').replace('#', '');
@@ -46,8 +46,8 @@ const fitScale = (w: number, h: number, iw: number, ih: number, contain: boolean
 };
 
 const wanderAt = (t: number, w: number, h: number): [number, number] => [
-  w * (0.5 + 0.33 * Math.sin(t * 0.53) + 0.08 * Math.sin(t * 1.31 + 0.6)),
-  h * (0.5 + 0.28 * Math.sin(t * 0.71 + 1.1) + 0.07 * Math.cos(t * 1.57))
+  w * (0.5 + 0.33 * Math.sin(t * 0.4) + 0.08 * Math.sin(t * 0.95 + 0.6)),
+  h * (0.5 + 0.28 * Math.sin(t * 0.52 + 1.1) + 0.07 * Math.cos(t * 1.15))
 ];
 
 const measureEdge = (context: CanvasRenderingContext2D, image: CanvasImageSource) => {
@@ -395,13 +395,17 @@ interface DitherVeilProps {
   reverse?: boolean;
   wander?: boolean;
   clickBurst?: boolean;
+  // A veil that exists only to be exported is read back through toDataURL, so
+  // it needs its drawing buffer kept and its viewport gating dropped.
+  capture?: boolean;
+  onReady?: () => void;
   className?: string;
   style?: CSSProperties;
 }
 
 // The ref holds the resolved settings, so every field the render loop reads is
 // present. Defaults are applied by the destructuring above, not by the reader.
-type VeilSettings = Required<Omit<DitherVeilProps, 'className' | 'style' | 'src'>>;
+type VeilSettings = Required<Omit<DitherVeilProps, 'className' | 'style' | 'src' | 'onReady'>>;
 
 const DitherVeil = ({
   src = DEFAULT_SRC,
@@ -422,14 +426,20 @@ const DitherVeil = ({
   reverse = false,
   wander = false,
   clickBurst = true,
+  capture = false,
+  onReady = undefined,
   className = '',
   style = undefined
 }: DitherVeilProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const settingsRef = useRef<VeilSettings | null>(null);
   const wakeRef = useRef<() => void>(() => {});
+  // Kept apart from the settings because it is a callback that changes identity
+  // on every render, and the effect that would read it must not re-run for it.
+  const onReadyRef = useRef<(() => void) | undefined>(onReady);
 
   useEffect(() => {
+    onReadyRef.current = onReady;
     settingsRef.current = {
       fit,
       pattern,
@@ -447,7 +457,8 @@ const DitherVeil = ({
       rim,
       reverse,
       wander,
-      clickBurst
+      clickBurst,
+      capture
     };
     wakeRef.current();
   });
@@ -457,7 +468,13 @@ const DitherVeil = ({
     if (!container) return undefined;
 
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 2), alpha: false, antialias: false });
+    const captureMode = Boolean(settingsRef.current?.capture);
+    const renderer = new Renderer({
+      dpr: Math.min(window.devicePixelRatio || 1, 2),
+      alpha: false,
+      antialias: false,
+      preserveDrawingBuffer: captureMode
+    });
     const gl = renderer.gl;
     const canvas = gl.canvas;
     canvas.style.display = 'block';
@@ -550,6 +567,7 @@ const DitherVeil = ({
 
     let image: HTMLImageElement | null = null;
     let introStart = 0;
+    let readySent = false;
     let diffusedKey = '';
     let diffusionBlocked = false;
     let width = 1;
@@ -750,6 +768,13 @@ const DitherVeil = ({
       viewUniforms.uIntro.value = 1 - Math.pow(1 - intro, 2);
       renderer.render({ scene: viewMesh });
 
+      // Announced after the last frame of the reveal reaches the buffer, since
+      // that frame is what an exporter reads back.
+      if (image && intro >= 1 && !readySent) {
+        readySent = true;
+        onReadyRef.current?.();
+      }
+
       const busy =
         pointer.inside || wanderOn || presence > 0.002 || bursts.length > 0 || now < trailUntil || (image && intro < 1);
       if (busy && visible) raf = requestAnimationFrame(frame);
@@ -818,11 +843,16 @@ const DitherVeil = ({
       wake();
     });
     resizeObserver.observe(container);
-    const intersectionObserver = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      wake();
-    });
-    intersectionObserver.observe(container);
+    let intersectionObserver: IntersectionObserver | undefined;
+    // An export card is parked off-screen by design, so treating that as
+    // "not visible" would freeze its reveal half done.
+    if (!captureMode) {
+      intersectionObserver = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        wake();
+      });
+      intersectionObserver.observe(container);
+    }
 
     layout();
     wake();
@@ -831,7 +861,7 @@ const DitherVeil = ({
       cancelAnimationFrame(raf);
       wakeRef.current = () => {};
       resizeObserver.disconnect();
-      intersectionObserver.disconnect();
+      intersectionObserver?.disconnect();
       img.onload = null;
       container.removeEventListener('pointermove', onMove);
       container.removeEventListener('pointerenter', onMove);

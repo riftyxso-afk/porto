@@ -33,6 +33,11 @@ interface ScrollRevealProps {
   // Fires once the words have settled. Only the playOnLoad path reports it, since
   // that is the one with a fixed end; scroll-scrubbed text has no moment of completion.
   onRevealComplete?: () => void;
+  // Seconds to wait before this block starts, so stacked paragraphs play in turn.
+  revealDelay?: number;
+  // Bumped by the parent to play the reveal again on the text it now shows, for
+  // example after a language switch. Only the playOnLoad path reads it.
+  replayKey?: number;
 }
 
 export default function ScrollReveal({
@@ -47,6 +52,8 @@ export default function ScrollReveal({
   rotationEnd = "bottom bottom",
   wordAnimationEnd = "bottom bottom",
   onRevealComplete,
+  revealDelay = 0,
+  replayKey = 0,
 }: ScrollRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -132,7 +139,7 @@ export default function ScrollReveal({
         gsap.fromTo(
           el,
           { rotate: baseRotation, transformOrigin: "0% 50%" },
-          { rotate: 0, duration: 1.4, ease: "power2.out" },
+          { rotate: 0, duration: 1.4, delay: revealDelay, ease: "power2.out" },
         );
         gsap.fromTo(
           words,
@@ -144,6 +151,7 @@ export default function ScrollReveal({
             opacity: 1,
             filter: "blur(0px)",
             duration: 1.1,
+            delay: revealDelay,
             stagger: 0.045,
             ease: "power2.out",
             // With a stagger, onComplete fires after the last word settles, not the first.
@@ -215,6 +223,7 @@ export default function ScrollReveal({
     blurStrength,
     enableBlur,
     playOnLoad,
+    replayKey,
     rotationEnd,
     wordAnimationEnd,
   ]);

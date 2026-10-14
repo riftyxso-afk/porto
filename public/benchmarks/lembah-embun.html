@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#304b3c">
+<title>Lembah Embun · Musim untuk pulang</title>
+<link rel="icon" href="data:,">
+<style>
+/* Paper, ink and carved wood keep the interface in the same world as the farm. */
+:root{--paper:#fff7e5;--ink:#304235;--muted:#62654e;--green:#365740;--line:#d4c7a8;--gold:#b97535;--terracotta:#aa5438}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#a4bca0;font-size:14px}button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible{outline:3px solid #b96325;outline-offset:4px}button:active:not(:disabled){transform:translateY(1px)}[hidden]{display:none!important}h1,h2,h3,p{margin:0}button,svg{flex-shrink:0}kbd{display:inline-grid;place-items:center;min-width:23px;min-height:23px;padding:1px 5px;background:#e9dfc7;border:1px solid #c6b998;border-bottom-width:2px;border-radius:4px;font:600 11px ui-sans-serif,system-ui;color:var(--ink)}.serif,h1,h2,h3{font-family:Georgia,"Times New Roman",serif}.muted{color:var(--muted)}.small{font-size:12px}.row{display:flex;align-items:center;gap:12px}.spread{justify-content:space-between}.primary,.secondary{min-height:44px;border:1px solid var(--green);border-radius:7px;padding:10px 18px;font-weight:650}.primary{background:var(--green);color:var(--paper)}.secondary{background:var(--paper)}.text-button{background:none;border:0;text-decoration:underline;text-underline-offset:4px;padding:12px;color:var(--ink)}.paper{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 0 #31483718}.icon{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#world{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}#vignette{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 160px #273b2a30}
+#loading{position:fixed;inset:0;background:#edf0d9;z-index:60;display:grid;place-items:center;text-align:center;padding:30px}#loading h1{font-size:48px;margin:15px 0}#loading p{max-width:500px;line-height:1.7}#load-mark{width:48px;height:48px;border:3px solid #cad4b4;border-top-color:var(--green);border-radius:50%;margin:auto;animation:spin 2s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+#title-screen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;padding:5vw;pointer-events:none;background:linear-gradient(90deg,#243d2b36,transparent 65%)}.title-card{pointer-events:auto;max-width:420px;padding:36px 34px 28px;position:relative;border-radius:6px 24px 24px 6px;border-left:6px solid #b87642;box-shadow:8px 12px 30px #243d2b26}.title-card .edition{font-size:12px;color:var(--muted);margin-bottom:25px}.title-card h1{font-size:64px;font-weight:500;line-height:.94;letter-spacing:-2.5px}.title-card .subtitle{font:italic 23px Georgia,serif;margin:14px 0 23px;color:#83582f}.title-card .premise{line-height:1.8;margin-bottom:25px}.title-card .primary{width:100%;margin-bottom:10px}.title-card .footnote{margin-top:20px;font-size:11px;line-height:1.7;color:var(--muted)}.title-card .tiny-flower{position:absolute;right:28px;top:24px;color:#9b703f;width:38px;height:38px}.title-card .controls-preview{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:22px;font-size:11px}.title-location{position:absolute;right:35px;bottom:28px;color:#fffbea;background:#304235;padding:9px 15px;border-radius:5px;font-size:12px}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}#hud button,#toolbar,#seed-strip{pointer-events:auto}.top-left{position:absolute;left:24px;top:22px;width:268px}.calendar{padding:14px 18px;display:flex;align-items:center;gap:14px}.day-number{font:36px Georgia,serif;border-right:1px solid var(--line);padding-right:15px}.calendar strong{display:block;font-size:14px;margin-bottom:4px}.calendar .clock{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.status{display:flex;gap:10px;margin-top:9px}.money{padding:10px 14px;display:flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}.coin{display:inline-block;width:18px;height:18px;background:#e5b563;border:3px solid #a96c25;outline:1px solid #f4ddae;border-radius:50%}.energy{padding:9px 12px;flex:1;min-width:0}.energy-text{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}.energy-track{height:7px;background:#d7cfb8;border-radius:4px;overflow:hidden}.energy-fill{height:100%;background:#587849;width:100%;transition:width .2s}.area-label{margin:12px 3px;font-size:12px;background:#304235;color:#fff7e5;border-radius:5px;padding:6px 10px;display:inline-block}
+.top-right{position:absolute;right:24px;top:22px;width:280px}.nav-buttons{display:flex;justify-content:flex-end;gap:7px;margin-bottom:10px}.nav-button{border:1px solid var(--line);background:var(--paper);border-radius:7px;min-height:42px;padding:8px 12px;font-size:12px}.nav-button svg{width:19px;height:19px}.quest-preview{padding:18px 20px;width:100%;text-align:left;border-radius:7px 7px 15px 7px}.quest-preview .chapter-tag{font-size:11px;color:var(--muted)}.quest-preview h2{font-size:21px;font-weight:500;margin:6px 0 12px}.objective{display:flex;gap:8px;font-size:12px;line-height:1.6;margin-top:6px}.check{border:1px solid #9a997b;border-radius:50%;width:14px;height:14px;flex:0 0 14px;display:grid;place-items:center;margin-top:3px;font-size:10px}.check.done{background:var(--green);color:var(--paper);border-color:var(--green)}.quest-preview .quest-footer{font-size:10px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between}
+#map-box{position:absolute;left:24px;bottom:25px;width:163px;padding:8px;border-radius:9px}#minimap{display:block;width:145px;height:124px;border-radius:4px}#map-box figcaption{font:italic 12px Georgia,serif;text-align:center;margin:6px 0 2px}#map-box{margin:0}.bottom-center{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);max-width:calc(100% - 28px);display:flex;align-items:center;flex-direction:column;gap:9px}#interaction{max-width:480px;background:#2e4237;color:#fff7e5;padding:10px 17px;border-radius:8px;display:flex;align-items:center;gap:10px;line-height:1.4;text-align:left;min-height:44px;box-shadow:0 3px 0 #1f312526;border:1px solid #ffffff33}#interaction kbd{background:#fff7e5}#interaction:disabled{opacity:.92;cursor:default}#interaction small{color:#e0ddc6;display:block;font-size:10px;margin-top:2px}#toolbar{display:flex;gap:5px;padding:7px;border-radius:12px;background:#fff7e5;border:1px solid #cbbd9a;box-shadow:0 4px 0 #374c3926}.tool{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;width:76px;height:68px;border:1px solid transparent;border-radius:7px;background:transparent}.tool .key{position:absolute;top:4px;left:6px;font-size:9px;color:var(--muted)}.tool .tool-name{font-size:10px}.tool[aria-pressed=true]{background:#e4e8cf;border-color:#82945f}.tool[aria-pressed=true]::after{content:"";position:absolute;bottom:-6px;width:14px;height:3px;background:var(--green);border-radius:2px}#seed-strip{display:flex;gap:5px;background:var(--paper);border-radius:7px;padding:5px;border:1px solid var(--line)}.seed-option{border:1px solid transparent;border-radius:4px;padding:7px 10px;background:none;font-size:11px;min-height:36px}.seed-option[aria-pressed=true]{border-color:#7c895f;background:#e4e8cf}.bottom-right{position:absolute;bottom:26px;right:24px;text-align:right;font-size:10px;line-height:2;color:#fff7e5;background:#304235;border-radius:6px;padding:7px 11px}#save-status{font-size:10px;color:var(--muted);text-align:right;margin-top:7px}
+#toast{position:fixed;z-index:35;left:50%;top:26px;transform:translateX(-50%);max-width:min(510px,calc(100% - 32px));padding:13px 20px;background:var(--paper);border:1px solid #b9bd96;border-radius:8px;box-shadow:0 4px 18px #263a3033;text-align:center;line-height:1.5;pointer-events:none}#dialogue{position:fixed;z-index:30;left:50%;bottom:28px;transform:translateX(-50%);width:min(760px,calc(100% - 32px));padding:23px 26px;background:var(--paper);border:2px solid #a49d74;border-radius:8px 20px 8px 8px;box-shadow:0 8px 30px #23362f45}.dialogue-top{display:flex;align-items:center;gap:11px;margin-bottom:12px}.portrait{display:grid;place-items:center;width:39px;height:39px;border-radius:50% 50% 42% 42%;background:#d9dfc2;font:24px Georgia,serif;color:var(--green)}#speaker{font:22px Georgia,serif}#dialogue-text{font-size:16px;line-height:1.75;min-height:56px}.dialogue-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:15px}#dialogue-progress{font-size:11px;color:var(--muted)}
+#modal-backdrop{position:fixed;inset:0;z-index:40;background:#23372f80;display:grid;place-items:center;padding:20px}#modal{width:min(650px,100%);max-height:calc(100dvh - 40px);overflow:auto;padding:28px;border:1px solid #bbae87;background:var(--paper);border-radius:12px;box-shadow:0 15px 60px #172a3c40}#modal-title{font-size:30px;font-weight:500;margin-right:12px}#modal-close{width:38px;height:38px;background:#e8e1cd;border:0;border-radius:50%;font-size:22px}#modal-content{margin-top:22px;line-height:1.7}#modal-content h3{font-size:20px;margin:20px 0 8px}#modal-content p{margin:10px 0}#modal-content .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.shop-item,.inventory-row{padding:13px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.shop-item strong{display:block}.shop-item small{display:block;color:var(--muted);font-size:12px}.shop-item button{min-width:100px}.journal-chapter{padding:12px 0 20px;border-bottom:1px solid var(--line)}.journal-chapter h3{margin-top:8px!important}.journal-chapter .objective{font-size:14px}.journal-entry{padding:15px 0;border-bottom:1px solid var(--line)}.journal-entry p{font-size:13px}.journal-entry b{color:#825638}.help-grid{display:grid;grid-template-columns:100px 1fr;gap:10px 15px;font-size:13px}.help-grid kbd{justify-self:start}.end-heading{font:italic 21px Georgia,serif;color:#80592f}.quest-note{padding:12px 15px;background:#e8ead6;border-radius:6px;font-size:13px}.modal-kicker{font-size:11px;color:var(--muted)}#day-flash{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#eff0dc;opacity:0;pointer-events:none;transition:opacity .32s}#day-flash.active{opacity:1}#day-flash div{text-align:center}#day-flash h2{font-size:42px;margin-bottom:12px;font-weight:500}#day-flash p{font:italic 20px Georgia,serif}#touch-pad{display:none;position:absolute;bottom:165px;left:16px;grid-template-columns:42px 42px 42px;gap:3px;pointer-events:auto}#touch-pad button{height:42px;border:1px solid #c2bf9e;background:#fff7e5e8;border-radius:8px;touch-action:none;font-size:18px}#touch-pad button:first-child{grid-column:2}#touch-pad button:nth-child(2){grid-row:2;grid-column:1}#touch-pad button:nth-child(3){grid-row:2;grid-column:2}#touch-pad button:nth-child(4){grid-row:2;grid-column:3}
+@media(max-width:850px){.top-left{left:14px;top:14px;width:224px}.top-right{right:14px;top:14px;width:232px}.quest-preview{padding:14px}.quest-preview h2{font-size:19px}#map-box{left:14px;bottom:18px;width:126px}#minimap{width:108px;height:96px}.bottom-right{display:none}.bottom-center{bottom:18px}.title-card{max-width:370px;padding:28px}.title-card h1{font-size:56px}}
+@media(max-width:560px){body{font-size:13px}.top-left{width:178px;left:10px;top:10px}.calendar{padding:9px 11px;gap:9px}.day-number{font-size:29px;padding-right:10px}.calendar strong{font-size:11px}.calendar .clock{font-size:10px}.status{gap:5px;margin-top:5px}.money{padding:8px 9px;font-size:12px}.energy{padding:8px}.energy-text{font-size:9px}.top-right{width:auto;right:10px;top:10px;max-width:calc(100% - 204px)}.nav-buttons{gap:4px;flex-wrap:wrap;max-width:170px}.nav-button{min-height:36px;padding:6px 9px;font-size:11px}.quest-preview{padding:10px;max-width:170px}.quest-preview h2{font-size:15px;line-height:1.25;margin:4px 0}.quest-preview .objective,.quest-footer{display:none!important}.chapter-tag{font-size:9px!important}#save-status{font-size:9px}.area-label{font-size:10px;margin-top:7px}#map-box{display:none}.bottom-center{bottom:max(12px,env(safe-area-inset-bottom));gap:7px}.tool{width:66px;height:59px}.tool .icon{width:23px;height:23px}.tool .tool-name{font-size:9px}.tool .key{font-size:8px}#toolbar{padding:5px;gap:3px}#interaction{font-size:11px;max-width:310px;padding:8px 12px}#dialogue{bottom:16px;padding:18px;width:calc(100% - 22px)}#dialogue-text{font-size:14px;line-height:1.65}#speaker{font-size:20px}.dialogue-bottom{margin-top:13px}.title-card{max-width:335px;padding:26px 24px}.title-card h1{font-size:52px}.title-card .edition{margin-bottom:20px}.title-card .premise{font-size:13px;margin-bottom:20px}.title-location{display:none}#title-screen{padding:22px;justify-content:center;background:#243d2b26}#modal{padding:20px}#modal-title{font-size:26px}#modal-backdrop{padding:12px}.seed-option{padding:6px 9px;font-size:10px}#toast{top:145px;font-size:12px}.help-grid{grid-template-columns:85px 1fr}}
+@media(pointer:coarse){#touch-pad{display:grid}}@media(max-height:580px){.title-card{padding:18px 25px;max-width:390px}.title-card h1{font-size:40px}.title-card .edition,.controls-preview,.title-card .footnote{display:none!important}.title-card .subtitle{margin:10px 0}.title-card .premise{margin-bottom:14px;font-size:12px}.top-left{top:10px}.top-right{top:10px}.quest-preview .objective,.quest-footer{display:none!important}#map-box{display:none}#dialogue{bottom:12px;padding:16px 20px}#dialogue-text{font-size:14px;min-height:0}.bottom-center{bottom:10px}.tool{height:53px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#save-status{background:var(--paper);padding:3px 7px;border-radius:4px;width:fit-content;margin-left:auto}
+.title-card .edition{padding-right:52px;line-height:1.6}#toast{width:max-content}
+.audio-controls{margin-top:22px;padding:16px;background:#e8ead6;border-radius:8px}.audio-controls h3{margin-top:0!important}.audio-setting{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin-top:14px}.audio-setting label{font-weight:600}.audio-setting output{font-variant-numeric:tabular-nums;color:var(--muted)}.audio-setting input{grid-column:1/-1;width:100%;min-height:38px;margin:0;accent-color:var(--green);cursor:pointer}.audio-setting input:focus-visible{outline:3px solid #b96325;outline-offset:3px}.audio-setting input:disabled{opacity:.5;cursor:not-allowed}#sound-button svg{vertical-align:middle}#sound-button[aria-pressed=false]{color:#8a4d33}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs>
+<symbol id="i-hoe" viewBox="0 0 32 32"><path d="M8 27 23 7M19 6l8 6 3-4-8-6Z"/><path d="m7 25 3 2"/></symbol>
+<symbol id="i-seed" viewBox="0 0 32 32"><path d="M16 27V14M16 20C5 21 4 12 4 12s11-2 12 8ZM16 15C17 5 27 5 27 5s1 10-11 10ZM9 28h14"/></symbol>
+<symbol id="i-water" viewBox="0 0 32 32"><path d="M9 12h13v15H9ZM9 15H5v8h4M22 16l5-6 3 2-8 12M13 12V7h7v5M27 4v2M30 6v2"/></symbol>
+<symbol id="i-basket" viewBox="0 0 32 32"><path d="m5 14 3 14h17l3-14ZM3 14h27M10 13 16 4l7 9M12 18l1 6m7-6-1 6"/></symbol>
+<symbol id="i-flower" viewBox="0 0 40 40"><path d="M20 36V20m0 10c-9 0-11-7-11-7s10-1 11 7m0-5c7 0 10-7 10-7s-9-1-10 7"/><path d="M20 15c-9 0-9-9-3-7-2-8 7-8 6 0 6-4 10 5 2 7 6 6-2 11-5 4-5 6-11-1-5-4"/></symbol>
+<symbol id="i-sound" viewBox="0 0 32 32"><path d="M5 12h6l7-6v20l-7-6H5ZM22 11c3 3 3 7 0 10m4-14c5 5 5 13 0 18"/></symbol>
+<symbol id="i-muted" viewBox="0 0 32 32"><path d="M5 12h6l7-6v20l-7-6H5Zm18 0 6 8m0-8-6 8"/></symbol>
+</defs></svg>
+<canvas id="world" aria-label="Desa Lembah Embun, dunia 3D. Gunakan WASD untuk berjalan dan E untuk berinteraksi."></canvas><div id="vignette"></div>
+<div id="loading"><div><div id="load-mark"></div><h1>Lembah Embun</h1><p id="load-text">Menyiapkan kebun dan membuka jalan pulang…</p><p class="small muted" style="margin-top:18px">Three.js dimuat dari CDN. Koneksi internet diperlukan.</p><button id="reload" class="secondary" hidden style="margin-top:20px" onclick="location.reload()">Coba lagi</button></div></div>
+<section id="title-screen" hidden aria-label="Menu utama"><div class="title-card paper"><svg class="icon tiny-flower"><use href="#i-flower"/></svg><p class="edition">Sebuah kisah kecil tentang tumbuh kembali</p><h1>Lembah<br>Embun</h1><p class="subtitle">Musim untuk pulang</p><p class="premise">Sebuah kebun warisan. Lima tetangga.<br>Dan kesempatan untuk memulai lagi.</p><button id="start" class="primary">Pulang ke kebun</button><button id="new-game" class="secondary" hidden style="width:100%">Mulai cerita baru</button><div class="controls-preview"><kbd>W A S D</kbd> berjalan <span>·</span><kbd>E</kbd> berinteraksi <span>·</span> geser mouse untuk orbit</div><p class="footnote">Mainkan sesuai ritmemu. Tidak ada batas hari.<br>Kemajuan tersimpan otomatis di browser ini.</p></div><div class="title-location">Lembah Embun · Awal Musim Tunas</div></section>
+<main id="hud" hidden aria-label="Antarmuka permainan">
+<div class="top-left"><div class="calendar paper"><span id="day-number" class="day-number">01</span><div><strong id="calendar-label">Senin · Musim Tunas</strong><div class="clock"><span id="time-icon">☀</span><span id="clock-label">07.00 · Pagi</span></div></div></div><div class="status"><div class="money paper"><span class="coin" aria-hidden="true"></span><strong id="money">60</strong></div><div class="energy paper"><div class="energy-text"><span>Energi</span><span id="energy-number">100 / 100</span></div><div class="energy-track" role="progressbar" aria-label="Energi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="energy-fill" class="energy-fill"></div></div></div></div><span id="area-label" class="area-label">Kebun Nenek Suri</span></div>
+<div class="top-right"><nav class="nav-buttons" aria-label="Menu permainan"><button id="bag-button" class="nav-button">Tas <kbd>B</kbd></button><button id="journal-button" class="nav-button">Jurnal <kbd>J</kbd></button><button id="sound-button" class="nav-button" aria-label="Matikan musik dan efek suara (M)" aria-pressed="true" title="Musik dan efek suara · M"><svg class="icon" aria-hidden="true"><use href="#i-sound"/></svg></button><button id="menu-button" class="nav-button" aria-label="Panduan dan pengaturan">☰</button></nav><button id="quest-preview" class="quest-preview paper" aria-label="Buka jurnal quest"></button><div id="save-status">Tersimpan di browser</div></div>
+<figure id="map-box" class="paper"><canvas id="minimap" width="290" height="248" aria-label="Peta desa. Anda ditandai dengan panah putih."></canvas><figcaption>Lembah Embun</figcaption></figure>
+<div class="bottom-center"><button id="interaction" disabled><kbd>E</kbd><span id="interaction-label">Dekati petak untuk mulai berkebun</span></button><div id="seed-strip" hidden aria-label="Pilih benih"></div><div id="toolbar" role="group" aria-label="Pilih alat"><button class="tool" data-tool="0" aria-pressed="true"><span class="key">1</span><svg class="icon"><use href="#i-hoe"/></svg><span class="tool-name">Cangkul</span></button><button class="tool" data-tool="1" aria-pressed="false"><span class="key">2</span><svg class="icon"><use href="#i-seed"/></svg><span class="tool-name">Benih</span></button><button class="tool" data-tool="2" aria-pressed="false"><span class="key">3</span><svg class="icon"><use href="#i-water"/></svg><span class="tool-name">Penyiram</span></button><button class="tool" data-tool="3" aria-pressed="false"><span class="key">4</span><svg class="icon"><use href="#i-basket"/></svg><span class="tool-name">Keranjang</span></button></div></div>
+<div class="bottom-right"><kbd>W A S D</kbd> berjalan &nbsp; <kbd>E</kbd> interaksi<br>Geser mouse: orbit · Scroll: zoom</div><div id="touch-pad" aria-label="Kontrol sentuh"><button data-move="KeyW" aria-label="Maju">↑</button><button data-move="KeyA" aria-label="Kiri">←</button><button data-move="KeyS" aria-label="Mundur">↓</button><button data-move="KeyD" aria-label="Kanan">→</button></div>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<section id="dialogue" role="dialog" aria-modal="true" aria-labelledby="speaker" aria-describedby="dialogue-text" hidden><div class="dialogue-top"><span id="portrait" class="portrait" aria-hidden="true">S</span><span id="speaker"></span></div><p id="dialogue-text"></p><div class="dialogue-bottom"><span id="dialogue-progress"></span><button id="dialogue-next" class="primary">Lanjut <span aria-hidden="true">↵</span></button></div></section>
+<div id="modal-backdrop" hidden><section id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1"><div class="row spread"><h2 id="modal-title"></h2><button id="modal-close" aria-label="Tutup">×</button></div><div id="modal-content"></div></section></div>
+<div id="day-flash" aria-live="polite"><div><h2 id="new-day-label"></h2><p>Pelan-pelan, kita tumbuh lagi.</p></div></div>
+<noscript>Game ini membutuhkan JavaScript. Aktifkan JavaScript lalu buka kembali file ini.</noscript>
+<script>
+// The classic script can still explain CDN/import failures before the module runs.
+window.bootFailed = function(message) {
+ document.getElementById('loading').hidden=false;
+ document.getElementById('load-mark').hidden=true;
+ document.getElementById('load-text').textContent=message;
+ document.getElementById('reload').hidden=false;
+};
+window.bootTimer=setTimeout(()=>{if(!window.gameReady)window.bootFailed('Kebun belum berhasil dimuat. Periksa internet dan akses ke cdn.jsdelivr.net, lalu coba lagi.');},22000);
+</script>
+<script type="module">
+try {
+const THREE = await import('three');
+const STORY = {
+  title: 'Lembah Embun',
+  subtitle: 'Musim untuk pulang',
+  protagonist: {
+    name: 'Aruna',
+    background: 'Ilustrator dari kota yang kelelahan mengejar tenggat dan lama tak menggambar untuk dirinya sendiri. Setelah Nenek Suri wafat, Aruna mewarisi kebun kecil tempat ia menghabiskan liburan masa kecilnya.'
+  },
+  premise: 'Rawat kebun peninggalan Nenek Suri, bantu tetangga memulihkan kincir desa, lalu hidupkan kembali Pesta Panen Lembah Embun. Di antara benih dan pertemuan kecil, Aruna menemukan alasan untuk menetap.',
+  intro: [
+    { speaker: 'Aruna', text: 'Namaku Aruna, ilustrator dari kota. Belakangan, setiap gambar terasa seperti pekerjaan yang harus segera selesai.' },
+    { speaker: 'Aruna', text: 'Setelah Nenek Suri wafat, beliau meninggalkan kebun ini untukku. Aku pulang membawa satu koper dan buku sketsa yang sudah lama kosong.' },
+    { speaker: 'Surat Nenek Suri', text: 'Aruna sayang, benih ada di kotak dekat pintu. Kalau bingung harus mulai dari mana, tanamlah sesuatu yang ingin kamu makan.' },
+    { speaker: 'Mira', text: 'Selamat pulang, Aruna. Kami merindukan Suri, terutama caranya menyelipkan lobak ke tas tamu sebelum mereka pergi.' },
+    { speaker: 'Mira', text: 'Sejak badai merusak kincir, kami belum mengadakan Pesta Panen lagi. Aku ingin meja panjang di alun-alun terisi seperti dulu.' },
+    { speaker: 'Aruna', text: 'Aku belum tahu apakah bisa mengurus seluruh kebun. Tapi kurasa aku bisa mulai dari tiga lobak.' },
+    { speaker: 'Mira', text: 'Cangkul petak, tanam benih, lalu siram sebelum tidur. Lobak siap setelah satu malam tersiram, wortel dua, dan labu tiga.' },
+    { speaker: 'Mira', text: 'Panen tiga lobak, lalu temui aku di alun-alun. Istirahatlah di rumah kalau lelah; kebun ini tidak punya tenggat.' }
+  ],
+  chapters: [
+    {
+      title: 'Bab 1 · Akar yang Tertinggal',
+      description: 'Kebun Nenek Suri kembali menjadi tempat tumbuh. Panen 3 lobak, kemudian ceritakan hasilnya kepada Mira di alun-alun.',
+      hint: 'Cangkul → tanam → siram → tidur → panen. Lobak perlu 1 malam tersiram; hasil panen boleh disimpan atau dijual.',
+      complete: [
+        { speaker: 'Mira', text: 'Tiga lobak dari kebun Suri! Waktu kecil kamu selalu bilang daunnya mirip rambutku saat bangun tidur.' },
+        { speaker: 'Aruna', text: 'Aku masih hampir menelepon Nenek untuk menanyakan kapan harus menyiram. Untung ada kalian di sini.' },
+        { speaker: 'Mira', text: 'Datanglah kapan saja. Raka sedang mencari cara memperbaiki kincir, dan Bima tahu keadaan saluran airnya.' },
+        { speaker: 'Mira', text: 'Koperasi akan menyumbang suku cadang setelah penjualan panenmu mencapai 120 koin. Uang hasil panen tetap milikmu; kami ingin memastikan kebun yang memasok pesta sudah berjalan lagi.' }
+      ]
+    },
+    {
+      title: 'Bab 2 · Air untuk Semua',
+      description: 'Bantu desa menghidupkan kincir tua. Raih total 120 koin dari penjualan panen, bicara dengan Raka dan Bima, lalu kembali kepada Raka.',
+      hint: 'Jual panen lewat peti penjualan; semua pendapatan sejak awal dihitung, meskipun uangnya sudah dibelanjakan. Perbaikan kincir tidak memotong koin.',
+      complete: [
+        { speaker: 'Raka', text: 'Suku cadang dari koperasi sudah tiba. Bima membersihkan saluran tadi pagi; aku tinggal memasang bilah terakhir.' },
+        { speaker: 'Bima', text: 'Dengarkan airnya. Dulu aku dan Suri sering duduk di sini sambil menunggu tepung selesai digiling.' },
+        { speaker: 'Aruna', text: 'Aku hanya menjual beberapa keranjang sayur, tapi ternyata banyak orang ikut membantu. Boleh kugambar kalian di dekat kincir?' },
+        { speaker: 'Raka', text: 'Boleh, asal hidungku jangan sebesar labu. Temui Nila sekarang; dia sudah menyiapkan resep untuk pesta.' }
+      ]
+    },
+    {
+      title: 'Bab 3 · Satu Meja Lagi',
+      description: 'Sumbangkan 2 wortel dan 1 labu kepada Nila untuk hidangan pesta. Undang Mira, Raka, Sari, Bima, dan Nila dengan mengajak mereka bicara pada bab ini, lalu kembali kepada Nila.',
+      hint: 'Simpan 2 wortel dan 1 labu di tas untuk Nila. Wortel perlu 2 malam tersiram, labu 3; undangan dari percakapan sebelum bab ini belum dihitung.',
+      complete: [
+        { speaker: 'Nila', text: 'Wortelnya sudah kupotong, dan pai labu baru keluar dari oven. Semua sudah menerima undanganmu, Aruna.' },
+        { speaker: 'Aruna', text: 'Tadi pagi aku menggambar kebun tanpa melihat jam sekalipun. Sekarang aku ingin menggambar meja kita sebelum makanannya habis.' },
+        { speaker: 'Nila', text: 'Kalau begitu, duduklah di sebelahku. Pesta Panen Lembah Embun dimulai!' }
+      ]
+    }
+  ],
+  ending: [
+    { speaker: 'Mira', text: 'Untuk tangan yang menanam dan tetangga yang datang membantu. Terima kasih sudah membawa Pesta Panen pulang.' },
+    { speaker: 'Sari', text: 'Aku membawa cangkir dari toko, jadi jangan ada yang minum dari pot bunga. Bima, aku melihatmu tadi.' },
+    { speaker: 'Bima', text: 'Itu pot yang sangat bersih. Baiklah, berikan cangkirnya; aku masih ingin mencicipi sup wortel Nila.' },
+    { speaker: 'Raka', text: 'Kincirnya akan kuperiksa setiap minggu. Kamu tak perlu mengurus semuanya sendirian, Aruna.' },
+    { speaker: 'Aruna', text: 'Aku menaruh sketsa pertama di buku resep Nenek, tepat di halaman sup lobaknya. Ada ruang di sebelahnya untuk gambar pesta tahun depan.' },
+    { speaker: 'Aruna', text: 'Aku memutuskan untuk tinggal. Besok aku ingin menanam lagi, lalu duduk sebentar dan menggambar apa yang tumbuh.' },
+    { speaker: 'Lembah Embun', text: 'Cerita utama selesai. Kebun, tetangga, dan pagi berikutnya tetap menantimu; lanjutkan bertani sesukamu.' }
+  ],
+  npcs: {
+    mira: {
+      name: 'Mira',
+      role: 'Kepala desa',
+      personality: 'Sabar, teliti, dan suka mengenang hal kecil yang lucu.',
+      dialogue: [
+        'Aku Mira, kepala desa sekaligus pemegang kunci gudang yang paling sering lupa menaruh kunci. Biasanya ada di saku celemekku.',
+        'Suri dulu menanam lobak di baris dekat pagar. Katanya, tetangga jadi mudah meminta saat lewat.',
+        'Kalau panen pertamamu sudah siap, ceritakan kepadaku. Tiga lobak sudah cukup untuk memulai lagi.'
+      ],
+      invite: 'Pesta di alun-alun? Tentu aku datang, dan akan kubawa taplak kotak-kotak kesayangan Suri.',
+      after: 'Taplak pestanya masih berbau pai labu. Untuk sementara, kubiarkan begitu dulu.'
+    },
+    raka: {
+      name: 'Raka',
+      role: 'Tukang kayu',
+      personality: 'Pendiam, dapat diandalkan, dengan humor kering.',
+      dialogue: [
+        'Raka. Kalau pagar berbunyi saat angin lewat, panggil aku; kalau ayam yang berbunyi, panggil ayamnya.',
+        'Bilah kincirnya bisa kuganti. Aku perlu kabar dari Bima tentang saluran, lalu suku cadang dari koperasi setelah penjualan panenmu mencapai 120 koin.',
+        'Suri pernah mengembalikan bangku buatanku karena terlalu nyaman. Katanya, dia jadi lupa menyiram.'
+      ],
+      invite: 'Aku datang. Kursi tambahan juga akan kubawa, supaya tak ada yang makan sambil berdiri.',
+      after: 'Kursi di pesta itu kuat, kan? Nila mengambil pai tiga kali, jadi kurasa sudah teruji.'
+    },
+    sari: {
+      name: 'Sari',
+      role: 'Pemilik toko benih',
+      personality: 'Ceria, lugas, dan senang membantu sambil berhitung.',
+      dialogue: [
+        'Selamat datang di toko Sari! Benih ada, kabar desa juga ada, tapi kabar desa gratis.',
+        'Lobak cepat dipanen, wortel butuh dua malam tersiram, labu tiga. Siram tiap hari; tanah kering membuat pertumbuhannya menunggu.',
+        'Peti penjualan menerima hasil panenmu. Sisihkan wortel dan labu kalau Nila sedang merencanakan sesuatu dengan ovennya.'
+      ],
+      invite: 'Aku tutup toko sebentar untuk pesta! Akan kubawa cangkir cukup banyak, termasuk satu cadangan untuk Bima.',
+      after: 'Sejak pesta, semua orang menanyakan benih labu. Resep Nila rupanya lebih ampuh daripada papan tokoku.'
+    },
+    bima: {
+      name: 'Bima',
+      role: 'Penjaga kolam dan pemancing',
+      personality: 'Tenang, suka mengamati, dan mudah teralihkan oleh ikan.',
+      dialogue: [
+        'Aku Bima. Duduk saja kalau kakimu lelah; ikan-ikan di sini tidak keberatan ditemani.',
+        'Saluran ke kincir tertutup ranting sejak badai. Aku bisa membersihkannya, jadi bilang kepada Raka bahwa airnya akan siap.',
+        'Suri sering duduk di ujung dermaga membawa teh. Kadang kami pulang tanpa ikan dan tetap menyebutnya hari yang baik.'
+      ],
+      invite: 'Aku datang setelah menggulung tali pancing. Kali ini aku ingin duduk di dekat orang, bukan menunggu ikan.',
+      after: 'Sup wortel itu enak sekali. Aku sudah berjanji kepada Nila akan memakai cangkir yang benar di pesta berikutnya.'
+    },
+    nila: {
+      name: 'Nila',
+      role: 'Pembuat roti',
+      personality: 'Antusias, hangat, dan selalu mengingat makanan kesukaan tetangga.',
+      dialogue: [
+        'Aku Nila, dari rumah yang paling sering berbau roti. Kalau asapnya terlalu banyak, itu artinya aku sedang mencoba resep baru.',
+        'Untuk pesta, aku perlu dua wortel dan satu labu dari kebunmu. Sup dan pai buatan bersama terasa lebih istimewa.',
+        'Mira suka pinggiran pai yang garing, Raka selalu minta potongan kecil lalu menambah. Aku hafal; mereka belum tahu.'
+      ],
+      invite: 'Tentu aku ikut pestanya! Bawa dua wortel dan satu labu kepadaku, lalu pastikan empat tetangga kita juga sudah diajak.',
+      after: 'Aku menyalin resep pai untukmu. Besok kalau kebun sedang sepi, mampirlah; biasanya masih ada roti hangat.'
+    }
+  }
+};
+/* Desa Embun: geometri sederhana, tekstur canvas, tanpa aset gambar eksternal. */
+function createWorld(THREE, scene) {
+  const world=new THREE.Group(); scene.add(world);
+  const colliders=[],interactables=[],plots=[],npcs={};
+  let seed=59261;
+  const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+  const texture=(draw,size=128)=>{
+    const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);
+    const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+    t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;return t;
+  };
+  const speckles=(ctx,s,colors,n,max=3)=>{for(let i=0;i<n;i++){ctx.fillStyle=colors[Math.floor(rand()*colors.length)];ctx.fillRect(rand()*s,rand()*s,1+rand()*max,1+rand()*max);}};
+  const tex={
+    grass:texture((c,s)=>{c.fillStyle='#8eac70';c.fillRect(0,0,s,s);speckles(c,s,['#86a366','#9ab77a','#a2ba80'],520);}),
+    soil:texture((c,s)=>{c.fillStyle='#956343';c.fillRect(0,0,s,s);speckles(c,s,['#a87750','#785035','#b18459'],430);}),
+    sand:texture((c,s)=>{c.fillStyle='#dfca9d';c.fillRect(0,0,s,s);speckles(c,s,['#d0ba90','#ead8b4','#c8b386'],480,2);}),
+    wood:texture((c,s)=>{c.fillStyle='#a77549';c.fillRect(0,0,s,s);for(let y=0;y<s;y+=21){c.fillStyle='#805b39';c.fillRect(0,y,s,2);c.fillStyle='#b48456';c.fillRect(0,y+3,s,2);}c.strokeStyle='#91633e';for(let i=0;i<33;i++){let x=rand()*s,y=rand()*s;c.beginPath();c.moveTo(x,y);c.bezierCurveTo(x+8,y+3,x+16,y-2,x+27,y+1);c.stroke();}}),
+    roof:texture((c,s)=>{c.fillStyle='#b96046';c.fillRect(0,0,s,s);for(let y=0;y<s;y+=24){c.fillStyle=y%48?'#b05b43':'#c36c50';c.fillRect(0,y,s,22);c.strokeStyle='#914d3b';c.lineWidth=2;c.beginPath();c.moveTo(0,y+23);c.lineTo(s,y+23);c.stroke();for(let x=(y%48?-16:0);x<s;x+=32){c.beginPath();c.moveTo(x,y);c.lineTo(x+3,y+22);c.stroke();}}}),
+    plaster:texture((c,s)=>{c.fillStyle='#f0ddad';c.fillRect(0,0,s,s);speckles(c,s,['#e8d3a4','#f4e3be'],330,2);}),
+    water:texture((c,s)=>{c.fillStyle='#70aaa1';c.fillRect(0,0,s,s);c.lineWidth=2;for(let i=0;i<25;i++){let x=rand()*s,y=rand()*s;c.strokeStyle=i%2?'#a1c6ad':'#57988e';c.beginPath();c.moveTo(x,y);c.bezierCurveTo(x+5,y-3,x+12,y+3,x+21,y);c.stroke();}})
+  };
+  tex.grass.repeat.set(28,24);tex.sand.repeat.set(2,2);tex.roof.repeat.set(2,2);tex.water.repeat.set(5,4);
+  const mat=(color,opts={})=>new THREE.MeshStandardMaterial({color,roughness:.92,...opts});
+  const M={
+    grass:mat('#ffffff',{map:tex.grass}),soil:mat('#ffffff',{map:tex.soil}),wet:mat('#70513b',{map:tex.soil}),sand:mat('#ffffff',{map:tex.sand}),
+    wood:mat('#ffffff',{map:tex.wood}),darkWood:mat('#755239'),roof:mat('#ffffff',{map:tex.roof}),wall:mat('#ffffff',{map:tex.plaster}),
+    stone:mat('#b7b19a'),darkStone:mat('#858a78'),leaf:mat('#668a4e'),leafLight:mat('#88a460'),leafDark:mat('#577b49'),trunk:mat('#806047'),
+    cream:mat('#fbebc9'),green:mat('#4f8059'),dark:mat('#313e35'),teal:mat('#3d8d88'),red:mat('#c8644a'),gold:mat('#e4b85c'),pink:mat('#e4a598'),
+    window:mat('#a7c7b0',{emissive:'#ffd184',emissiveIntensity:.08}),
+    water:mat('#ffffff',{map:tex.water,transparent:true,opacity:.88,roughness:.35,metalness:.05}),deepWater:mat('#659389'),
+    cropLeaf:mat('#548647'),carrot:mat('#e69a43'),turnip:mat('#f2dcb4'),pumpkin:mat('#d78536')
+  };
+  const G={
+    box:new THREE.BoxGeometry(1,1,1),cylinder:new THREE.CylinderGeometry(.5,.5,1,8),cone:new THREE.ConeGeometry(.5,1,7),
+    ball:new THREE.IcosahedronGeometry(.5,1),pebble:new THREE.IcosahedronGeometry(.5,0),plane:new THREE.PlaneGeometry(1,1),
+    leaf:new THREE.SphereGeometry(.5,6,3),ring:new THREE.TorusGeometry(1.35,.13,6,20)
+  };
+  const mesh=(geo,material,parent=world,x=0,y=0,z=0,sx=1,sy=1,sz=1)=>{
+    const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=sx*sy*sz>.065;m.receiveShadow=true;parent.add(m);return m;
+  };
+  const box=(p,m,x,y,z,w,h,d)=>mesh(G.box,m,p,x,y,z,w,h,d);
+  const ball=(p,m,x,y,z,w,h=w,d=w)=>mesh(G.ball,m,p,x,y,z,w,h,d);
+  const cyl=(p,m,x,y,z,r,h)=>mesh(G.cylinder,m,p,x,y,z,r*2,h,r*2);
+  const beam=(p,a,b,w,m)=>{
+    const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),delta=end.clone().sub(start);
+    const obj=box(p,m,0,0,0,w,delta.length(),w);obj.position.copy(start.add(end).multiplyScalar(.5));
+    obj.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return obj;
+  };
+  const sign=(parent,text,x,y,z,width=2.3)=>{
+    const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');
+    ctx.fillStyle='#eee0b6';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#7d6446';ctx.lineWidth=7;ctx.strokeRect(8,8,496,112);
+    ctx.fillStyle='#48583e';ctx.font='bold 42px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,66,474);
+    const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+    const s=mesh(G.plane,mat('#ffffff',{map:t}),parent,x,y,z,width,width/4,1);s.castShadow=false;return s;
+  };
+  const label=text=>{
+    const c=document.createElement('canvas');c.width=256;c.height=80;const ctx=c.getContext('2d');
+    ctx.fillStyle='rgba(250,239,209,.94)';ctx.beginPath();ctx.roundRect(14,10,228,59,18);ctx.fill();
+    ctx.fillStyle='#405343';ctx.font='bold 31px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,128,41);
+    const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true}));s.scale.set(1.45,.45,1);return s;
+  };
+
+  // Jalur lebar menghubungkan kebun, alun-alun, toko, dan dermaga.
+  box(world,M.grass,0,-.45,0,64,.8,54);
+  const path=(x,z,w,d)=>box(world,M.sand,x,.008,z,w,.025,d);
+  path(1,-1,3.4,29);path(-6,.6,12,2.8);path(7,-8.2,15,2.5);path(8,4,17,2.5);path(13.6,9,3.2,12);path(17,13.8,7,2.8);
+  const square=mesh(G.cylinder,M.sand,world,3,.025,0,10.8,.07,10.8);square.rotation.y=Math.PI/8;
+  path(-2,6.4,2.4,9.5);path(-7,11,12,2);
+  [[-28,-22,14,8,12],[-15,-27,20,10,13],[4,-28,23,11,13],[27,-25,19,9,14],[-33,-7,11,6,16],[32,-4,11,6,17],[-30,23,15,4,11],[30,24,13,5,14]].forEach(([x,z,w,h,d],i)=>ball(world,i%2?M.leafLight:M.leaf,x,h*.12-1.5,z,w,h,d));
+
+  const roofGeo=new THREE.BufferGeometry();
+  roofGeo.setAttribute('position',new THREE.Float32BufferAttribute([
+    -.5,0,-.5,.5,0,-.5,0,1,-.5,-.5,0,.5,0,1,.5,.5,0,.5,
+    -.5,0,-.5,0,1,-.5,0,1,.5,-.5,0,-.5,0,1,.5,-.5,0,.5,
+    0,1,-.5,.5,0,-.5,.5,0,.5,0,1,-.5,.5,0,.5,0,1,.5
+  ],3));
+  roofGeo.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,.5,1,0,0,.5,1,1,0,0,0,1,0,1,1,0,0,1,1,0,1,0,0,1,0,1,1,0,0,1,1,0,1],2));
+  for(let i=0;i<roofGeo.attributes.position.count;i+=3){
+    for(const name of ['position','uv']){
+      const a=roofGeo.attributes[name],n=a.itemSize;
+      for(let j=0;j<n;j++){const temp=a.array[(i+1)*n+j];a.array[(i+1)*n+j]=a.array[(i+2)*n+j];a.array[(i+2)*n+j]=temp;}
+    }
+  }
+  roofGeo.computeVertexNormals();
+  function cottage(x,z,w,d,title,accent=M.green) {
+    const g=new THREE.Group();g.position.set(x,0,z);world.add(g);
+    box(g,M.stone,0,.18,0,w+.25,.36,d+.25);box(g,M.wall,0,1.55,0,w,2.8,d);
+    mesh(roofGeo,M.roof,g,0,2.95,0,w+.9,1.6,d+.8);box(g,M.darkWood,0,2.86,d/2+.035,w+.12,.16,.16);
+    [-1,1].forEach(s=>{box(g,M.wood,s*(w/2-.08),1.5,d/2+.035,.16,2.9,.13);box(g,M.wood,s*(w/2-.08),1.5,-d/2-.035,.16,2.9,.13);});
+    box(g,accent,0,1.04,d/2+.06,1,1.95,.12);box(g,M.darkWood,0,2.04,d/2+.1,1.17,.14,.16);ball(g,M.gold,.32,1,d/2+.15,.1);
+    box(g,M.stone,0,.16,d/2+.38,1.65,.25,.75);
+    [-1,1].forEach(s=>{
+      const wx=s*w*.31;box(g,M.darkWood,wx,1.65,d/2+.045,1.04,1.04,.12);box(g,M.window,wx,1.65,d/2+.12,.86,.85,.08);
+      box(g,M.cream,wx,1.65,d/2+.17,.07,.89,.08);box(g,M.cream,wx,1.65,d/2+.17,.89,.07,.08);box(g,accent,wx,1.08,d/2+.25,1.2,.29,.4);
+      for(let j=0;j<4;j++){ball(g,M.leaf,wx-.42+j*.27,1.3,d/2+.24,.34,.28,.3);ball(g,j%2?M.gold:M.pink,wx-.42+j*.27,1.49,d/2+.26,.17);}
+    });
+    box(g,M.stone,w*.28,3.65,-d*.2,.65,2.1,.65);box(g,M.darkStone,w*.28,4.7,-d*.2,.8,.17,.8);
+    sign(g,title,0,2.5,d/2+.11,Math.min(w*.61,3.2));
+    colliders.push({x,z,w:w+.28,d:d+.28});return g;
+  }
+  cottage(-11,-4,6,4.6,'RUMAH NENEK',M.teal);cottage(4,-13,5.6,4.4,'TOKO SARI',M.green);
+  cottage(12,-12,4.8,4.5,'BENGKEL RAKA',M.darkWood);cottage(14,0,5.6,4.3,'ROTI NILA',M.red);
+  cottage(-3,-14.1,5,4.3,'BALE WARGA',M.green);cottage(23,4.3,4.6,4.2,'RUMAH BIMA',M.teal);
+  interactables.push({id:'home',type:'home',x:-11,z:-.6,label:'Rumah · istirahat',radius:2});
+  for(let i=0;i<7;i++)box(world,i%2?M.cream:M.green,1.2+i*.93,2.65,-10.1,.93,.12,1.8);
+  [-1,1].forEach(s=>box(world,M.darkWood,4+s*3.02,1.3,-9.35,.12,2.6,.12));
+  for(let i=0;i<3;i++){box(world,M.wood,7.7,.12+i*.35,-11,1.5,.3,.9);const log=cyl(world,M.wood,15.2,.27+Math.floor(i/2)*.45,-11.5+(i%2)*.5,.24,2.4);log.rotation.z=Math.PI/2;}
+  box(world,M.wood,11,.7,3.1,1.9,.25,.9);[-.7,.7].forEach(o=>box(world,M.darkWood,11+o,.35,3.1,.12,.7,.6));
+  for(let i=0;i<4;i++)ball(world,M.gold,10.35+i*.43,.94,3.1,.38,.25,.52);
+  const crate=(x,z,produce)=>{box(world,M.wood,x,.3,z,1.15,.6,.9);box(world,M.darkWood,x,.6,z,.97,.04,.7);for(let i=0;i<6;i++)ball(world,produce,x-.35+(i%3)*.35,.7,z-.2+Math.floor(i/3)*.4,.32);};
+  crate(7.7,-9.9,M.carrot);crate(7.7,-8.7,M.cropLeaf);
+  const tree=(x,z,size=1,variant=0)=>{
+    const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(size);world.add(g);
+    cyl(g,M.trunk,0,1.2,0,.22,2.4);const branch=cyl(g,M.trunk,.35,1.85,0,.12,1);branch.rotation.z=-.65;
+    ball(g,variant?M.leafLight:M.leaf,0,2.9,0,2.5,2.3,2.5);ball(g,M.leafDark,-.7,2.5,.2,1.6,1.55,1.5);ball(g,M.leafLight,.65,3.05,.2,1.7,1.8,1.7);
+    colliders.push({x,z,w:.65*size,d:.65*size});return g;
+  };
+  [[-22,-17,1.5],[-16,-18,1.3],[-9,-20,1.45],[0,-21,1.3],[8,-21,1.4],[17,-21,1.55],[24,-18,1.5],[-23,-8,1.4],[-21,-2,1.35],[-23,5,1.4],[-20,12,1.2],[-17,17,1.1],[-24,19,1.3],[27,-10,1.4],[28,-1,1.3],[28,7,1.2],[7,15,1.05],[-7,18,1.05],[-2,19,1.15],[26,22,1.1],[-16,-1,1.1],[8,-3.5,.9]].forEach(([x,z,s],i)=>tree(x,z,s,i%3===0));
+  const fence=(x1,z1,x2,z2)=>{
+    const n=Math.ceil(Math.hypot(x2-x1,z2-z1)/1.65);
+    for(let i=0;i<=n;i++){const t=i/n;box(world,M.cream,x1+(x2-x1)*t,.52,z1+(z2-z1)*t,.15,1.05,.15);}
+    [.34,.76].forEach(y=>beam(world,[x1,y,z1],[x2,y,z2],.105,M.cream));
+  };
+  fence(-14.2,1.7,-3.1,1.7);fence(-14.2,1.7,-14.2,11);fence(-14.2,11,-9.8,11);fence(-4.8,11,-3.1,11);
+  fence(-19,0,-19,10.5);fence(-19,10.5,-15.6,10.5);fence(-19,0,-15.6,0);
+  const furrowMat=mat('#734b34');
+  for(let row=0;row<3;row++)for(let col=0;col<4;col++){
+    const x=-12+col*2.5,z=3.5+row*2.5,g=new THREE.Group();g.position.set(x,.03,z);world.add(g);
+    const soil=box(g,M.grass,0,0,0,2.14,.11,2.14),furrows=new THREE.Group(),plants=new THREE.Group();g.add(furrows,plants);furrows.visible=false;
+    for(let n=0;n<5;n++)box(furrows,furrowMat,-.78+n*.39,.066,0,.055,.012,1.9);
+    plots.push({x,z,group:g,soil,furrows,plants});
+  }
+  const shipping=new THREE.Group();shipping.position.set(-1,0,7);world.add(shipping);
+  box(shipping,M.wood,0,.6,0,1.6,1.2,1.25);box(shipping,M.darkWood,0,1.23,0,1.76,.15,1.4);box(shipping,M.darkWood,0,1.33,0,1.28,.03,.66);
+  sign(shipping,'JUAL PANEN',0,.65,.637,1.45);interactables.push({id:'shipping',type:'sell',x:-1,z:7,label:'Peti jual panen',radius:2});
+  const well=new THREE.Group();well.position.set(-3.3,0,-1.8);world.add(well);
+  cyl(well,M.stone,0,.46,0,.9,.92);cyl(well,M.deepWater,0,.93,0,.66,.025);
+  [-1,1].forEach(v=>box(well,M.wood,v*.72,1.38,0,.16,2.1,.18));mesh(roofGeo,M.roof,well,0,2.4,0,2.2,.65,1.5);
+  beam(well,[-.8,1.95,0],[.8,1.95,0],.14,M.darkWood);beam(well,[0,1.95,0],[0,1.14,0],.025,M.darkWood);cyl(well,M.wood,0,1.1,0,.25,.37);
+  colliders.push({x:-3.3,z:-1.8,w:1.7,d:1.7});
+
+  // Rig karakter menyimpan pivot kaki/tangan agar langkah tidak membuat geometri baru.
+  const skins=['#dbab7c','#bd8964','#e5bd96','#c6936b','#f0c59c'].map(c=>mat(c));
+  const hairs=['#604a3a','#4c4237','#75634c','#d9d0b2','#984e35'].map(c=>mat(c));
+  function character(shirt,skin,hair,hat=false,apron=false) {
+    const g=new THREE.Group(),body=new THREE.Group();g.add(body);g.userData.body=body;
+    box(body,shirt,0,.84,0,.52,.61,.33);box(body,M.cream,0,1.1,.19,.18,.11,.04);
+    if(apron)box(body,M.cream,0,.74,.183,.42,.47,.035);
+    const legs=[],arms=[];
+    [-1,1].forEach(s=>{
+      const leg=new THREE.Group();leg.position.set(s*.15,.57,0);body.add(leg);
+      box(leg,hat?M.teal:M.darkWood,0,-.2,0,.22,.4,.25);box(leg,M.darkWood,0,-.46,.075,.23,.15,.38);legs.push(leg);
+      const arm=new THREE.Group();arm.position.set(s*.34,1.04,0);body.add(arm);
+      box(arm,shirt,0,-.13,0,.18,.3,.23);ball(arm,skin,0,-.33,0,.2,.25,.21);arms.push(arm);
+    });
+    ball(body,skin,0,1.42,0,.64,.65,.59);ball(body,hair,0,1.61,-.055,.68,.4,.61);
+    [-1,1].forEach(s=>{ball(body,skin,s*.31,1.42,0,.15,.19,.16);ball(body,M.dark,s*.12,1.45,.278,.055,.07,.035);});
+    ball(body,skin,0,1.37,.3,.1,.09,.095);box(body,M.red,0,1.29,.273,.09,.023,.02);
+    if(hat){cyl(body,M.gold,0,1.79,0,.51,.08);cyl(body,M.gold,0,1.91,0,.31,.23);cyl(body,M.darkWood,0,1.8,0,.32,.07);}
+    g.userData.legs=legs;g.userData.arms=arms;g.userData.walk=0;return g;
+  }
+  const player=character(M.teal,skins[2],hairs[0],true);world.add(player);player.position.set(-7,0,8);
+  const npcDefs=[['mira','Mira',3,0,M.pink,0,3],['raka','Raka',11,-8,M.darkWood,1,1],['sari','Sari',4,-9,M.green,2,0],['bima','Bima',17,14,M.teal,3,3],['nila','Nila',14,4,M.red,4,4]];
+  npcDefs.forEach(([id,name,x,z,shirt,skin,hair],idx)=>{
+    const npc=character(shirt,skins[skin],hairs[hair],id==='bima',id==='nila'||id==='sari');
+    npc.position.set(x,0,z);npc.rotation.y=id==='bima'?-.65:(idx%2?-.2:.2);world.add(npc);
+    const tag=label(name);tag.position.y=2.22;npc.add(tag);npcs[id]=npc;
+    interactables.push({id,type:'npc',x,z,label:name+' · bicara',radius:2.2});
+  });
+
+  const pondGeo=new THREE.CylinderGeometry(.5,.5,1,32);
+  mesh(pondGeo,M.sand,world,22,.018,15,13.25,.04,11.05);
+  const water=mesh(pondGeo,M.water,world,22,.055,15,12,.045,9.8);
+  for(let i=0;i<24;i++){
+    const a=i/24*Math.PI*2,x=22+Math.cos(a)*6.1,z=15+Math.sin(a)*5;
+    if(x<20&&z>12.6&&z<15.4)continue;
+    const r=.45+rand()*.5;ball(world,i%3?M.stone:M.darkStone,x,.13,z,r*1.3,r*.75,r);
+  }
+  for(let i=0;i<7;i++){
+    const x=21.8+rand()*3.4,z=12.2+rand()*5.1,lily=cyl(world,M.leaf,x,.09,z,.24,.015);lily.scale.z*=.85;
+    if(i%3===0)ball(world,M.pink,x,.16,z,.16,.12,.16);
+  }
+  for(let i=0;i<8;i++)box(world,M.wood,15.7+i*.61,.19,14,.57,.17,2.25);
+  [15.55,20.3].forEach(x=>[12.95,15.05].forEach(z=>cyl(world,M.darkWood,x,.46,z,.12,.9)));
+  interactables.push({id:'pond',type:'fish',x:19,z:14,label:'Dermaga · memancing',radius:1.8});
+  colliders.push({x:24,z:15,w:6.9,d:8.5},{x:19.2,z:10.9,w:4.5,d:2.7},{x:19.4,z:17.6,w:4.6,d:3.5});
+  const wheel=new THREE.Group();wheel.position.set(24.7,1.58,9.7);world.add(wheel);
+  mesh(G.ring,M.darkWood,wheel);const hub=cyl(wheel,M.darkWood,0,0,0,.25,.75);hub.rotation.x=Math.PI/2;
+  for(let i=0;i<10;i++){
+    const a=i/10*Math.PI*2,spoke=box(wheel,M.wood,0,0,0,.12,2.7,.19);spoke.rotation.z=a;
+    const paddle=box(wheel,M.wood,Math.sin(a)*1.32,Math.cos(a)*1.32,0,.48,.22,.68);paddle.rotation.z=-a;
+  }
+  box(world,M.stone,24.7,.7,9.25,.48,1.4,.4);box(world,M.stone,24.7,.7,10.15,.48,1.4,.4);
+  const stream=new THREE.Group();world.add(stream);box(stream,M.water,24.7,.1,8,.95,.025,3);stream.visible=false;
+  sign(world,'KINCIR EMBUN',23,1.8,9.55,2.3);box(world,M.darkWood,23,.8,9.5,.1,1.5,.1);
+
+  // Instancing mengurangi draw call untuk bunga dan rumput kecil.
+  const dummy=new THREE.Object3D();
+  const grassInstances=new THREE.InstancedMesh(G.cone,M.leaf,180);grassInstances.castShadow=false;world.add(grassInstances);
+  let blades=0;
+  for(let tries=0;tries<1600&&blades<180;tries++){
+    const x=-27+rand()*54,z=-22+rand()*44;
+    if(Math.abs(x-1)<3||(x>-15&&x<17&&z>-10&&z<12)||(x>14&&z>8)||(z<-9&&x>-17&&x<17))continue;
+    dummy.position.set(x,.16,z);dummy.scale.set(.15+rand()*.15,.26+rand()*.2,.15);dummy.rotation.set(0,rand()*6.28,(rand()-.5)*.4);dummy.updateMatrix();grassInstances.setMatrixAt(blades++,dummy.matrix);
+  }
+  grassInstances.count=blades;
+  const stems=new THREE.InstancedMesh(G.cylinder,M.cropLeaf,65),heads=new THREE.InstancedMesh(G.ball,M.cream,65);world.add(stems,heads);
+  const flowerCenters=[[-15,8],[-16,-7],[9,-14],[18,2],[6,12]];
+  for(let i=0;i<65;i++){
+    const [cx,cz]=flowerCenters[i%5],x=cx+(rand()-.5)*3,z=cz+(rand()-.5)*2.7,h=.21+rand()*.19;
+    dummy.position.set(x,h/2,z);dummy.rotation.set(0,0,0);dummy.scale.set(.035,h,.035);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);
+    dummy.position.y=h;dummy.scale.set(.17,.13,.17);dummy.updateMatrix();heads.setMatrixAt(i,dummy.matrix);heads.setColorAt(i,new THREE.Color(i%3===0?'#e9b85a':i%3===1?'#f4e9c8':'#dd8c83'));
+  }
+  const animals=[];
+  function chicken(x,z){
+    const g=new THREE.Group();world.add(g);g.position.set(x,0,z);
+    ball(g,M.cream,0,.4,0,.55,.49,.65);ball(g,M.cream,0,.69,.23,.34,.38,.35);ball(g,M.red,0,.9,.22,.13,.18,.22);
+    const beak=mesh(G.cone,M.gold,g,0,.68,.45,.15,.2,.15);beak.rotation.x=Math.PI/2;
+    [-1,1].forEach(s=>{ball(g,M.dark,s*.12,.73,.36,.045);box(g,M.gold,s*.12,.13,0,.05,.24,.07);});
+    const tail=ball(g,M.cream,0,.55,-.3,.25,.3,.4);tail.rotation.x=-.5;
+    animals.push({group:g,x,z,phase:rand()*6.28,kind:'chicken'});
+  }
+  chicken(-17,3);chicken(-16.6,6);chicken(-18,4.6);
+  const cow=new THREE.Group();cow.position.set(-17.2,0,8.6);world.add(cow);
+  ball(cow,M.cream,0,.98,0,1.16,1.08,1.75);ball(cow,M.dark,.49,1.14,-.22,.19,.61,.64);
+  box(cow,M.cream,0,1.08,.9,.7,.68,.68);box(cow,M.pink,0,.91,1.25,.76,.31,.26);
+  [-1,1].forEach(s=>{
+    ball(cow,M.cream,s*.48,1.35,.86,.4,.16,.24);ball(cow,M.dark,s*.22,1.2,1.25,.075);
+    [-1,1].forEach(t=>{box(cow,M.cream,s*.34,.42,t*.57,.24,.73,.26);box(cow,M.dark,s*.34,.12,t*.57,.25,.19,.27);});
+  });
+  animals.push({group:cow,x:-17.2,z:8.6,phase:1,kind:'cow'});
+
+  const leafCount=35,leafGeo=new THREE.PlaneGeometry(.13,.24),leafMat=mat('#dbb86b',{side:THREE.DoubleSide});
+  const fallingLeaves=new THREE.InstancedMesh(leafGeo,leafMat,leafCount);fallingLeaves.castShadow=false;world.add(fallingLeaves);
+  const leaves=Array.from({length:leafCount},()=>({x:-21+rand()*42,z:-17+rand()*33,phase:rand()*20,speed:.3+rand()*.3}));
+  const glow=texture((c,s)=>{const grad=c.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);grad.addColorStop(0,'rgba(255,244,158,1)');grad.addColorStop(.18,'rgba(250,225,112,.9)');grad.addColorStop(1,'rgba(255,223,96,0)');c.fillStyle=grad;c.fillRect(0,0,s,s);},64);
+  const flyPositions=new Float32Array(45*3),flySeeds=[];
+  for(let i=0;i<45;i++)flySeeds.push({x:-17+rand()*40,z:-8+rand()*26,y:.5+rand()*1.8,p:rand()*6.28});
+  const flyGeo=new THREE.BufferGeometry();flyGeo.setAttribute('position',new THREE.BufferAttribute(flyPositions,3));
+  const fireflies=new THREE.Points(flyGeo,new THREE.PointsMaterial({map:glow,size:.21,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,color:'#fff0a7'}));
+  fireflies.frustumCulled=false;fireflies.visible=false;world.add(fireflies);
+  const festival=new THREE.Group();world.add(festival);festival.visible=false;
+  // Meja panjang yang baru muncul saat pesta menjadi pusat pertemuan warga.
+  box(festival,M.wood,3,.76,-.2,4.9,.17,1.65);
+  box(festival,M.cream,3,.857,-.2,1.05,.025,1.7);
+  [1,5].forEach(x=>[-.78,.38].forEach(z=>box(festival,M.darkWood,x,.36,z,.16,.72,.16)));
+  [1.35,3,4.65].forEach(x=>[-1.5,1.1].forEach(z=>{
+    box(festival,M.wood,x,.4,z,.68,.12,.6);
+    [-.23,.23].forEach(dx=>[-.21,.21].forEach(dz=>box(festival,M.darkWood,x+dx,.19,z+dz,.085,.38,.085)));
+    box(festival,M.wood,x,.72,z+(z<0?-.27:.27),.68,.53,.09);
+    cyl(festival,M.cream,x,.867,z<0?-.65:.25,.25,.025);
+    ball(festival,M.gold,x,.922,z<0?-.65:.25,.23,.08,.17);
+  }));
+  cyl(festival,M.cream,3,.88,-.2,.39,.055);
+  cyl(festival,M.pumpkin,3,.95,-.2,.31,.11);
+  [-.16,0,.16].forEach(x=>box(festival,M.gold,3+x,1.012,-.2,.035,.013,.48));
+  [-.16,0,.16].forEach(z=>box(festival,M.gold,3,1.016,-.2+z,.48,.013,.035));
+  [1.75,4.25].forEach(x=>{cyl(festival,M.cream,x,.885,-.2,.28,.03);ball(festival,M.gold,x,.98,-.2,.44,.17,.27);});
+  const celebrationPositions={mira:[1,-2],raka:[4.8,-2],sari:[-.2,.2],bima:[6.2,.2],nila:[4.5,2.4]};
+  const pennantGeo=new THREE.BufferGeometry();pennantGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.22,0,0,.22,0,0,0,-.5,0],3));pennantGeo.computeVertexNormals();
+  const pennantMats=['#e6ba65','#c9765c','#91a57d'].map(c=>mat(c,{side:THREE.DoubleSide}));
+  [-3,5].forEach(z=>{
+    [-1,8].forEach(x=>box(festival,M.darkWood,x,1.95,z,.15,3.9,.15));
+    for(let i=0;i<12;i++){
+      const x=-1+i*.82,y=3.75-Math.sin(i/11*Math.PI)*.5,x2=-1+(i+1)*.82,y2=3.75-Math.sin((i+1)/11*Math.PI)*.5;
+      if(i<11)beam(festival,[x,y,z],[x2,y2,z],.025,M.darkWood);
+      mesh(pennantGeo,pennantMats[i%3],festival,x,y,z);
+    }
+  });
+  const lanternMat=mat('#ffe0a0',{emissive:'#ffd884',emissiveIntensity:.6});
+  [[-.8,-3],[7.8,-3],[-.8,5],[7.8,5]].forEach(([x,z])=>ball(festival,lanternMat,x,3.35,z,.46,.65,.46));
+  const festivalLight=new THREE.PointLight('#ffd298',0,17,2);festivalLight.position.set(3,3,1);world.add(festivalLight);
+  let isFestival=false,isRestored=false;
+  function setFestival(v){
+    isFestival=!!v;festival.visible=isFestival;festivalLight.intensity=isFestival?6:0;
+    npcDefs.forEach(([id,name,homeX,homeZ],idx)=>{
+      const [x,z]=isFestival?celebrationPositions[id]:[homeX,homeZ],npc=npcs[id];
+      npc.position.set(x,0,z);npc.rotation.y=isFestival?Math.atan2(3-x,-.2-z):(id==='bima'?-.65:(idx%2?-.2:.2));
+      const interaction=interactables.find(item=>item.type==='npc'&&item.id===id);
+      interaction.x=x;interaction.z=z;
+    });
+  }
+  function setRestored(v){isRestored=!!v;stream.visible=isRestored;}
+  function cropLeaf(parent,x,y,z,angle,size){
+    const l=mesh(G.leaf,M.cropLeaf,parent,x,y,z,.19*size,.55*size,.13*size);l.rotation.z=angle;return l;
+  }
+  function setPlot(index,state){
+    const p=plots[index];if(!p)return;
+    p.soil.material=state.tilled?(state.watered?M.wet:M.soil):M.grass;p.furrows.visible=!!state.tilled;
+    p.plants.clear();if(!state.crop)return;
+    const duration={lobak:1,wortel:2,labu:3}[state.crop]||1,stage=Math.max(0,Math.min(1,(state.growth||0)/duration));
+    const points=state.crop==='labu'?[[0,0]]:[[-.46,-.42],[.45,-.42],[-.46,.43],[.45,.43]];
+    points.forEach(([x,z])=>{
+      const plant=new THREE.Group();plant.position.set(x,.08,z);p.plants.add(plant);
+      const size=.52+stage*.72;cropLeaf(plant,-.08,.22*size,0,.6,size);cropLeaf(plant,.08,.22*size,0,-.6,size);
+      if(state.crop==='lobak'){
+        if(stage>.35)ball(plant,M.turnip,0,.11+stage*.07,0,.2+stage*.32,.2+stage*.22,.2+stage*.32);
+        cropLeaf(plant,0,.3*size,0,0,size*.9);
+      }else if(state.crop==='wortel'){
+        if(stage>.35){const root=mesh(G.cone,M.carrot,plant,0,.14,0,.2+stage*.18,.2+stage*.32,.2+stage*.18);root.rotation.z=Math.PI;}
+        cropLeaf(plant,0,.38*size,0,.12,size*1.2);cropLeaf(plant,.14,.32*size,.04,-.45,size);
+      }else{
+        if(stage>.28){
+          for(let n=0;n<7;n++){const a=n/7*Math.PI*2;ball(plant,M.pumpkin,Math.sin(a)*.18*stage,.15+stage*.2,Math.cos(a)*.18*stage,.3+stage*.45,.3+stage*.47,.3+stage*.45);}
+          cyl(plant,M.darkWood,0,.3+stage*.5,0,.07,.2);
+        }
+        cropLeaf(plant,-.38,.24,0,1.25,1.3);cropLeaf(plant,.38,.24,.1,-1.25,1.3);
+      }
+    });
+  }
+  function update(dt,elapsed,flags={}){
+    if(typeof flags.festival==='boolean'&&flags.festival!==isFestival)setFestival(flags.festival);
+    if(typeof flags.restored==='boolean'&&flags.restored!==isRestored)setRestored(flags.restored);
+    const night=!!flags.night;M.window.emissiveIntensity=night?.75:.06;fireflies.visible=night;
+    tex.water.offset.x=elapsed*.008;tex.water.offset.y=Math.sin(elapsed*.12)*.035;
+    if(isRestored)wheel.rotation.z-=dt*.6;
+    const walking=player.userData.walk||0,stride=Math.sin(elapsed*11)*.62*walking;
+    player.userData.legs[0].rotation.x=stride;player.userData.legs[1].rotation.x=-stride;
+    player.userData.arms[0].rotation.x=-stride*.7;player.userData.arms[1].rotation.x=stride*.7;
+    player.userData.body.position.y=Math.abs(Math.sin(elapsed*11))*.045*walking;
+    Object.values(npcs).forEach((npc,i)=>{npc.userData.body.position.y=Math.sin(elapsed*1.8+i)*.018;});
+    animals.forEach(a=>{
+      const t=elapsed*(a.kind==='cow'?.13:.29)+a.phase;
+      a.group.position.x=a.x+Math.sin(t)*.55;a.group.position.z=a.z+Math.cos(t*.83)*.5;
+      a.group.rotation.y=Math.atan2(Math.cos(t),-Math.sin(t*.83));a.group.position.y=a.kind==='chicken'?Math.abs(Math.sin(elapsed*4+a.phase))*.018:0;
+    });
+    leaves.forEach((l,i)=>{
+      const t=elapsed*l.speed+l.phase;dummy.position.set(l.x+Math.sin(t*.7)*1.8,4.8-(t%4.8),l.z+Math.cos(t*.4)*.7);dummy.scale.setScalar(1);dummy.rotation.set(t,t*.6,t*.8);dummy.updateMatrix();fallingLeaves.setMatrixAt(i,dummy.matrix);
+    });fallingLeaves.instanceMatrix.needsUpdate=true;
+    if(night){
+      flySeeds.forEach((f,i)=>{flyPositions[i*3]=f.x+Math.sin(elapsed*.7+f.p)*.6;flyPositions[i*3+1]=f.y+Math.sin(elapsed*1.3+f.p)*.35;flyPositions[i*3+2]=f.z+Math.cos(elapsed*.6+f.p)*.5;});
+      flyGeo.attributes.position.needsUpdate=true;fireflies.material.opacity=.65+Math.sin(elapsed*2)*.25;
+    }
+  }
+  return {player,npcs,plots,interactables,colliders,setPlot,update,setFestival,setRestored};
+}
+
+// ── Rules and save data ──────────────────────────────────────────────────────
+// Growth counts watered nights, not wall time. A dry crop waits; it never dies.
+const CROPS = {
+ lobak: {name:'Lobak', days:1, seedPrice:8, price:24, color:'#eee7cc'},
+ wortel: {name:'Wortel', days:2, seedPrice:14, price:42, color:'#d98b3c'},
+ labu: {name:'Labu', days:3, seedPrice:24, price:85, color:'#b9672e'}
+};
+const CROP_KEYS = Object.keys(CROPS);
+const NPC_KEYS = Object.keys(STORY.npcs);
+const SAVE_KEY = 'lembah-embun-v1';
+const DAY_SECONDS = 300; // Five real minutes from 06.00 to midnight; menus pause time.
+const $ = id => document.getElementById(id);
+const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+const freshState = () => ({
+ version:1,day:1,hour:7,money:60,energy:100,chapter:0,
+ seeds:{lobak:6,wortel:4,labu:2},bag:{lobak:0,wortel:0,labu:0,ikan:0},
+ harvested:{lobak:0,wortel:0,labu:0},earned:0,fishEarned:0,
+ plots:Array.from({length:12},()=>({tilled:false,crop:null,growth:0,watered:false})),
+ talked:[],invited:[],donated:{wortel:0,labu:0},dialogCounts:{},
+ journal:[],introSeen:false,tool:0,seed:'lobak',aidDay:0,
+ position:{x:-7,z:11},completedDay:null,sound:true,audioSettings:{music:.42,effects:.7}
+});
+let state=freshState(), running=false, transitioning=false, modalOpen=false;
+let dialogue=null, near=null, storageAvailable=true, toastTimer, saveTimer=0;
+const keys=new Set();
+let lastFocused=null;
+function readSave(){
+ try {
+  const raw=localStorage.getItem(SAVE_KEY); if(!raw)return null;
+  const s=JSON.parse(raw), nonnegative=n=>Number.isFinite(n)&&n>=0;
+  const count=n=>Number.isSafeInteger(n)&&n>=0;
+  if(!s||typeof s!=='object'||Array.isArray(s))throw Error('shape');
+  if(s.version!==1||!count(s.day)||s.day<1||!Number.isInteger(s.chapter)||s.chapter<0||s.chapter>3)throw Error('version');
+  if(![s.money,s.energy,s.earned,s.fishEarned].every(count)||!nonnegative(s.hour)||s.hour<6||s.hour>=24||s.energy>100)throw Error('number');
+  if(!Array.isArray(s.plots)||s.plots.length!==12||s.plots.some(p=>!p||!(p.crop===null||CROP_KEYS.includes(p.crop))||!count(p.growth)||p.growth>(p.crop?CROPS[p.crop].days:0)||typeof p.tilled!=='boolean'||typeof p.watered!=='boolean'||(p.crop&&!p.tilled)))throw Error('plots');
+  for(const key of CROP_KEYS)if(![s.seeds?.[key],s.bag?.[key],s.harvested?.[key]].every(count))throw Error('inventory');
+  if(!count(s.bag.ikan)||![s.donated?.wortel,s.donated?.labu].every(count)||s.donated.wortel>2||s.donated.labu>1)throw Error('donation');
+  const uniqueNPCs=a=>Array.isArray(a)&&a.every(k=>NPC_KEYS.includes(k))&&new Set(a).size===a.length;
+  if(!uniqueNPCs(s.talked)||!uniqueNPCs(s.invited)||!Array.isArray(s.journal)||!s.dialogCounts||typeof s.dialogCounts!=='object'||Array.isArray(s.dialogCounts)||Object.entries(s.dialogCounts).some(([k,n])=>!NPC_KEYS.includes(k)||!count(n)))throw Error('story');
+  // Reload prose from the authored story, never render arbitrary saved HTML.
+  const memories=[{title:'Lelehan embun · Hari kepulangan',lines:STORY.intro},...STORY.chapters.slice(0,2).map(c=>({title:c.title,lines:c.complete})),{title:'Pesta Panen · Musim untuk pulang',lines:[...STORY.chapters[2].complete,...STORY.ending]}];
+  if(s.journal.some(e=>!e||!memories.some(m=>m.title===e.title))||s.journal.length>memories.length)throw Error('journal');
+  s.journal=s.journal.map(e=>memories.find(m=>m.title===e.title));
+  if(typeof s.introSeen!=='boolean'||typeof s.sound!=='boolean'||!count(s.aidDay)||(s.completedDay!==null&&(!count(s.completedDay)||s.completedDay<1)))throw Error('flags');
+  // Existing farms gain the new soundtrack once; subsequent mute/volume choices persist.
+  if(s.audioSettings===undefined){s.audioSettings={music:.42,effects:.7};s.sound=true;}
+  else if(!s.audioSettings||typeof s.audioSettings!=='object'||Array.isArray(s.audioSettings)||!['music','effects'].every(k=>Number.isFinite(s.audioSettings[k])&&s.audioSettings[k]>=0&&s.audioSettings[k]<=1))throw Error('audio');
+  if(!Number.isFinite(s.position?.x)||!Number.isFinite(s.position?.z))throw Error('position');
+  if(!CROP_KEYS.includes(s.seed)||![0,1,2,3].includes(s.tool))throw Error('tool');
+  return s;
+ }catch(error){
+  storageAvailable=error.name!=='SecurityError';
+  setTimeout(()=>toast(storageAvailable?'Simpanan tidak bisa dibaca. Kamu dapat memulai cerita baru.':'Browser membatasi penyimpanan. Game tetap bisa dimainkan selama tab ini terbuka.'),1200);
+  return null;
+ }
+}
+let savedGame=readSave();
+function save(announce=false){
+ if(!running)return;
+ state.position={x:world.player.position.x,z:world.player.position.z};
+ try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));storageAvailable=true;$('save-status').textContent='Tersimpan di browser';if(announce)toast('Kemajuan kebun tersimpan.');}
+ catch{storageAvailable=false;$('save-status').textContent='Simpanan browser tidak tersedia';if(announce)toast('Browser tidak mengizinkan penyimpanan. Tetaplah di tab ini untuk melanjutkan.');}
+}
+function toast(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,3400);}
+function recordStory(title,lines){if(!state.journal.some(e=>e.title===title))state.journal.push({title,lines});}
+
+// ── Scene, lighting and an orbiting follow camera ────────────────────────────
+const renderer=new THREE.WebGLRenderer({canvas:$('world'),antialias:true,alpha:false,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#b7d1b8');
+scene.fog=new THREE.Fog('#b7d1b8',47,105);
+const camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,.1,180);
+const hemi=new THREE.HemisphereLight(0xfff5d8,0x718257,2.25);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffdfa4,3.1);sun.position.set(-18,28,15);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-38,right:38,top:38,bottom:-38,near:1,far:90});
+sun.shadow.bias=-.00035;sun.shadow.normalBias=.04;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xc9dfe2,.55);fill.position.set(15,18,-20);scene.add(fill);
+const world=createWorld(THREE,scene);
+world.player.position.set(-7,0,11);
+const target=new THREE.Vector3(-2,0,2), desiredTarget=new THREE.Vector3();
+let yaw=.53,pitch=.87,distance=25,drag=null;
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ring=new THREE.Mesh(new THREE.RingGeometry(.69,.78,40),new THREE.MeshBasicMaterial({color:0xffefb4,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide}));
+ring.rotation.x=-Math.PI/2;ring.position.y=.08;ring.visible=false;scene.add(ring);
+const skyColors={morning:new THREE.Color('#c5d7b7'),noon:new THREE.Color('#bfd6c2'),dusk:new THREE.Color('#c6997d'),night:new THREE.Color('#354857')};
+function updateLight(){
+ const h=running?state.hour:9;
+ let a,b,t,light,ambient;
+ if(h<9){a=skyColors.morning;b=skyColors.noon;t=(h-6)/3;light=2.6+t*.5;ambient=2;sun.color.set('#ffe1a8');}
+ else if(h<16){a=skyColors.noon;b=a;t=0;light=3.1;ambient=2.25;sun.color.set('#fff0c7');}
+ else if(h<19){a=skyColors.noon;b=skyColors.dusk;t=(h-16)/3;light=3.1-t*1.4;ambient=2.25-t*.7;sun.color.set('#ffba78');}
+ else if(h<21){a=skyColors.dusk;b=skyColors.night;t=(h-19)/2;light=1.7-t*1.3;ambient=1.55-t*.7;sun.color.set('#c3d4f5');}
+ else{a=skyColors.night;b=a;t=0;light=.4;ambient=.85;sun.color.set('#c3d4f5');}
+ scene.background.copy(a).lerp(b,clamp(t,0,1));scene.fog.color.copy(scene.background);sun.intensity=light;hemi.intensity=ambient;
+ sun.position.set(-18+(h-7)*2.3,Math.max(9,30-Math.abs(h-12)*2),14);
+}
+function blocked(x,z){return world.colliders.some(c=>Math.abs(x-c.x)<c.w/2+.3&&Math.abs(z-c.z)<c.d/2+.3);}
+function movePlayer(dt){
+ let dx=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0), dz=(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0);
+ const moving=dx!==0||dz!==0;
+ world.player.userData.walk=moving?1:0;
+ if(!moving)return;
+ const length=Math.hypot(dx,dz);dx/=length;dz/=length;
+ const vx=(dx*Math.cos(yaw)+dz*Math.sin(yaw))*5.1*dt;
+ const vz=(-dx*Math.sin(yaw)+dz*Math.cos(yaw))*5.1*dt;
+ const p=world.player.position,oldX=p.x,oldZ=p.z,nx=clamp(p.x+vx,-27,27),nz=clamp(p.z+vz,-21,22);
+ if(!blocked(nx,p.z))p.x=nx;if(!blocked(p.x,nz))p.z=nz;
+ if(Math.hypot(p.x-oldX,p.z-oldZ)>.001)gameAudio.play('step');
+ world.player.rotation.y=Math.atan2(vx,vz);
+}
+const canvas=$('world');
+canvas.addEventListener('pointerdown',e=>{if(e.button>2||modalOpen||dialogue)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;yaw-=(e.clientX-drag.x)*.006;pitch=clamp(pitch+(e.clientY-drag.y)*.004,.48,1.17);drag.x=e.clientX;drag.y=e.clientY;});
+const stopDrag=()=>{drag=null;};
+canvas.addEventListener('pointerup',stopDrag);canvas.addEventListener('pointercancel',stopDrag);
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('wheel',e=>{e.preventDefault();if(!modalOpen&&!dialogue)distance=clamp(distance+e.deltaY*.014,13,37);},{passive:false});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();save();gameAudio.pause();window.bootFailed('Tampilan 3D terhenti. Kemajuan terakhir sudah disimpan jika penyimpanan browser tersedia. Klik Coba lagi.');});
+
+// ── Dialogs, modals and keyboard focus ───────────────────────────────────────
+function pauseInput(){keys.clear();drag=null;world.player.userData.walk=0;}
+function syncInert(){ $('hud').inert=modalOpen||!!dialogue;$('title-screen').inert=modalOpen||!!dialogue;syncAudio(); }
+function openModal(title,html){
+ pauseInput();lastFocused=document.activeElement;modalOpen=true;
+ $('modal-title').textContent=title;$('modal-content').innerHTML=html;
+ $('modal-backdrop').hidden=false;syncInert();$('modal-close').focus();gameAudio.play('ui');
+}
+function closeModal(){
+ modalOpen=false;$('modal-backdrop').hidden=true;syncInert();
+ if(lastFocused?.isConnected&&!lastFocused.closest('[hidden]'))lastFocused.focus();
+}
+$('modal-close').addEventListener('click',closeModal);
+$('modal-backdrop').addEventListener('click',e=>{if(e.target===$('modal-backdrop'))closeModal();});
+function showDialogue(lines,onDone=()=>{}){
+ closeModal();pauseInput();lastFocused=document.activeElement;
+ dialogue={lines,index:0,onDone};$('dialogue').hidden=false;syncInert();renderDialogue();$('dialogue-next').focus();
+}
+function renderDialogue(){const d=dialogue.lines[dialogue.index];$('speaker').textContent=d.speaker;$('portrait').textContent=d.speaker[0];$('dialogue-text').textContent=d.text;$('dialogue-progress').textContent=`${dialogue.index+1} / ${dialogue.lines.length} · Enter lanjut · Esc tutup`;$('dialogue-next').textContent=dialogue.index===dialogue.lines.length-1?'Selesai':'Lanjut ↵';gameAudio.play('dialogue');}
+function finishDialogue(){if(!dialogue)return;const done=dialogue.onDone;dialogue=null;$('dialogue').hidden=true;syncInert();done();refreshHUD();save();}
+function nextDialogue(){if(!dialogue)return;dialogue.index++;if(dialogue.index>=dialogue.lines.length)finishDialogue();else renderDialogue();}
+$('dialogue-next').addEventListener('click',nextDialogue);
+function actionButton(action,label,kind='primary',extra=''){return `<button class="${kind}" data-action="${action}" ${extra}>${label}</button>`;}
+
+// ── Farming and economy ─────────────────────────────────────────────────────
+function spendEnergy(cost){if(state.energy<cost){toast('Energi habis. Pulang ke rumah dan tidur untuk memulihkannya.');gameAudio.play('error');return false;}state.energy-=cost;return true;}
+function selectTool(n){state.tool=n;refreshTools();updateInteraction();if(running){gameAudio.play('ui');save();}}
+function selectSeed(key){if(!CROPS[key])return;state.seed=key;state.tool=1;refreshTools();updateInteraction();gameAudio.play('ui');save();}
+function farm(index){
+ const p=state.plots[index],crop=CROPS[p.crop];
+ if(state.tool===0){
+  if(p.tilled){toast(p.crop?'Petak ini sudah ditanami.':'Tanah sudah gembur. Pilih Benih (2).');return;}
+  if(!spendEnergy(3))return;p.tilled=true;toast('Tanah gembur. Pilih Benih (2), lalu tekan E.');gameAudio.play('hoe');
+ }else if(state.tool===1){
+  if(!p.tilled){toast('Cangkul tanah dahulu dengan alat 1.');return;}
+  if(p.crop){toast('Petak ini sudah ditanami.');return;}
+  if(state.seeds[state.seed]<=0){toast('Benih habis. Beli di toko Sari, sebelah utara alun-alun.');return;}
+  if(!spendEnergy(2))return;state.seeds[state.seed]--;p.crop=state.seed;p.growth=0;p.watered=false;toast(`${CROPS[state.seed].name} ditanam. Siram dengan alat 3 sebelum tidur.`);gameAudio.play('plant');
+ }else if(state.tool===2){
+  if(!p.crop){toast('Tanam benih sebelum menyiram.');return;}
+  if(p.growth>=crop.days){toast('Tanaman siap panen. Gunakan Keranjang (4).');return;}
+  if(p.watered){toast('Tanah masih lembap. Cukup sekali sehari.');return;}
+  if(!spendEnergy(2))return;p.watered=true;toast(`${crop.name} disiram. Akan tumbuh saat berganti hari.`);gameAudio.play('water');
+ }else{
+  if(!p.crop){toast('Belum ada tanaman di petak ini.');return;}
+  if(p.growth<crop.days){toast(`${crop.name} perlu ${crop.days-p.growth} malam tersiram lagi.`);return;}
+  if(!spendEnergy(1))return;state.bag[p.crop]++;state.harvested[p.crop]++;toast(`+1 ${crop.name} masuk tas. Tanah siap ditanami lagi.`);p.crop=null;p.growth=0;p.watered=false;gameAudio.play('harvest');
+ }
+ world.setPlot(index,p);refreshHUD();updateInteraction();save();
+}
+function saleValue(reserve=false){
+ let total=state.bag.ikan*18;
+ for(const key of CROP_KEYS){let amount=state.bag[key];if(reserve&&state.chapter<3){if(key==='wortel')amount=Math.max(0,amount-(2-state.donated.wortel));if(key==='labu')amount=Math.max(0,amount-(1-state.donated.labu));}total+=amount*CROPS[key].price;}
+ return total;
+}
+function openShipping(){
+ const total=saleValue(),safe=saleValue(true);
+ openModal('Peti penjualan',`<p>Hasil kebun langsung ditukar dengan koin. Penjualan tanaman dihitung untuk bantuan kincir.</p>${CROP_KEYS.map(k=>`<div class="inventory-row"><span>${CROPS[k].name} × ${state.bag[k]}</span><strong>${state.bag[k]*CROPS[k].price} koin</strong></div>`).join('')}<div class="inventory-row"><span>Ikan × ${state.bag.ikan}</span><strong>${state.bag.ikan*18} koin</strong></div><p class="quest-note">${state.chapter<3?'Untuk pesta nanti, sisihkan 2 wortel dan 1 labu. Tombol “Sisihkan bahan pesta” menyimpannya otomatis.':'Semua hasil panen bebas kamu jual.'}</p><div class="actions">${actionButton('sell-safe',`Sisihkan bahan pesta · +${safe}`, 'primary',safe?'':'disabled')}${actionButton('sell-all',`Jual semua · +${total}`,'secondary',total?'':'disabled')}</div>${!total?'<p class="muted small">Tas panen masih kosong. Panen tanaman matang dengan Keranjang (4).</p>':''}`);
+}
+function sellHarvest(reserve){
+ let earned=0;
+ for(const k of CROP_KEYS){let qty=state.bag[k];if(reserve&&state.chapter<3){if(k==='wortel')qty=Math.max(0,qty-(2-state.donated.wortel));if(k==='labu')qty=Math.max(0,qty-(1-state.donated.labu));}state.bag[k]-=qty;earned+=qty*CROPS[k].price;}
+ const fish=state.bag.ikan*18;state.bag.ikan=0;state.earned+=earned;state.fishEarned+=fish;state.money+=earned+fish;
+ closeModal();toast(earned+fish?`Panen terjual. +${earned+fish} koin; total penjualan tanaman ${state.earned}.`:'Belum ada hasil yang dapat dijual.');if(earned+fish)gameAudio.play('coin');refreshHUD();save();
+}
+function openShop(){
+ openModal('Toko benih Sari',`<p class="row spread"><span>Benih untuk pagi berikutnya.</span><strong>${state.money} koin</strong></p>${CROP_KEYS.map(k=>`<div class="shop-item"><div><strong>${CROPS[k].name}</strong><small>${CROPS[k].days} malam tersiram · jual ${CROPS[k].price} koin</small><small>Di tas: ${state.seeds[k]} benih</small></div>${actionButton('buy-'+k,`${CROPS[k].seedPrice} koin`,'secondary',state.money<CROPS[k].seedPrice?'disabled':'')}</div>`).join('')}<div class="shop-item"><div><strong>Roti hangat</strong><small>Pulihkan 35 energi · langsung dimakan</small></div>${actionButton('bread','15 koin','secondary',state.money<15||state.energy>=100?'disabled':'')}</div><p class="muted small">Buntu tanpa benih atau uang? Sari menyediakan 3 benih lobak gratis jika uangmu kurang dari 8 koin dan tidak ada benih maupun tanaman di kebun.</p>${actionButton('aid','Minta benih bantuan','secondary',canGetAid()?'':'disabled')}`);
+}
+function canGetAid(){return state.money<8&&CROP_KEYS.every(k=>state.seeds[k]===0)&&state.plots.every(p=>!p.crop)&&state.aidDay!==state.day;}
+function buy(key){const c=CROPS[key];if(!c||state.money<c.seedPrice)return;state.money-=c.seedPrice;state.seeds[key]++;gameAudio.play('coin');refreshHUD();save();openShop();}
+function fish(){if(!spendEnergy(6))return;state.bag.ikan++;state.hour=Math.min(23.95,state.hour+.2);gameAudio.play('fish');toast('Seekor ikan kecil menggigit umpan! +1 ikan (jual 18 koin).');refreshHUD();save();}
+
+// ── Quest progression: rewards depend on counters, never current coins ───────
+function objectives(chapter=state.chapter){
+ if(chapter===0)return [{text:`Panen lobak ${Math.min(state.harvested.lobak,3)} / 3`,done:state.harvested.lobak>=3},{text:'Temui Mira di alun-alun',done:state.chapter>0}];
+ if(chapter===1)return [{text:`Penjualan tanaman ${Math.min(state.earned,120)} / 120 koin`,done:state.earned>=120},{text:'Bicara dengan Raka & Bima',done:['raka','bima'].every(k=>state.talked.includes(k))},{text:'Kembali kepada Raka',done:state.chapter>1}];
+ if(chapter===2)return [{text:`Sumbang wortel ${state.donated.wortel} / 2 dan labu ${state.donated.labu} / 1`,done:state.donated.wortel>=2&&state.donated.labu>=1},{text:`Undang tetangga ${state.invited.length} / 5`,done:state.invited.length>=5},{text:'Mulai pesta bersama Nila',done:state.chapter>2}];
+ return [{text:'Pesta Panen kembali ke desa',done:true},{text:'Rawat kebun sesuai ritmemu',done:true}];
+}
+function objectiveHTML(o){return `<div class="objective"><span class="check${o.done?' done':''}" aria-hidden="true">${o.done?'✓':''}</span><span>${o.text}</span></div>`;}
+function advanceChapter(){
+ gameAudio.play('quest');
+ if(state.chapter===0){state.chapter=1;state.money+=30;state.seeds.wortel+=2;toast('Bab 2 dibuka. Hadiah Mira: 30 koin dan 2 benih wortel.');}
+ else if(state.chapter===1){state.chapter=2;state.seeds.wortel+=2;state.seeds.labu++;world.setRestored(true);toast('Kincir berputar lagi! +2 benih wortel dan +1 benih labu.');}
+ refreshHUD();save();
+}
+function speakNPC(key){
+ const npc=STORY.npcs[key];if(!npc)return;
+ if(state.chapter===1&&['raka','bima'].includes(key)&&!state.talked.includes(key))state.talked.push(key);
+ let lines=[];
+ if(state.chapter===2&&!state.invited.includes(key)){state.invited.push(key);lines.push({speaker:npc.name,text:npc.invite});toast(`${npc.name} menerima undangan. ${state.invited.length} / 5 tetangga.`);}
+ if(state.chapter===0&&key==='mira'&&state.harvested.lobak>=3){recordStory(STORY.chapters[0].title,STORY.chapters[0].complete);showDialogue(STORY.chapters[0].complete,advanceChapter);return;}
+ if(state.chapter===1&&key==='raka'&&state.earned>=120&&['raka','bima'].every(k=>state.talked.includes(k))){recordStory(STORY.chapters[1].title,STORY.chapters[1].complete);showDialogue(STORY.chapters[1].complete,advanceChapter);return;}
+ const count=state.dialogCounts[key]||0;state.dialogCounts[key]=count+1;
+ lines.push({speaker:npc.name,text:state.chapter===3?npc.after:npc.dialogue[count%npc.dialogue.length]});
+ if(state.chapter===0&&key==='mira')lines.push({speaker:'Mira',text:`Kebunmu sudah menghasilkan ${Math.min(state.harvested.lobak,3)} dari 3 lobak. Aku menunggu kabar panenmu di sini.`});
+ if(state.chapter===1&&key==='raka')lines.push({speaker:'Raka',text:`Koperasi mencatat ${state.earned} dari 120 koin penjualan tanaman. ${state.talked.includes('bima')?'Kabar Bima sudah kuterima.':'Temui Bima di dermaga untuk kabar saluran air.'}`});
+ showDialogue(lines,()=>{if(key==='sari')openShop();else if(key==='nila'&&state.chapter===2)openFestivalSupplies();});
+ refreshHUD();save();
+}
+function readyForFestival(){return state.chapter===2&&state.donated.wortel>=2&&state.donated.labu>=1&&NPC_KEYS.every(k=>state.invited.includes(k));}
+function openFestivalSupplies(){
+ const needCarrot=Math.max(0,2-state.donated.wortel),needPumpkin=Math.max(0,1-state.donated.labu);
+ const canDonate=(needCarrot&&state.bag.wortel)||(needPumpkin&&state.bag.labu);
+ openModal('Dapur pesta Nila',`<p>Sup wortel dan pai labu akan memenuhi meja di alun-alun. Bahan yang kamu sumbangkan disimpan Nila sampai pesta dimulai.</p><div class="inventory-row"><span>Wortel untuk sup</span><strong>${state.donated.wortel} / 2 <span class="muted small">(tas: ${state.bag.wortel})</span></strong></div><div class="inventory-row"><span>Labu untuk pai</span><strong>${state.donated.labu} / 1 <span class="muted small">(tas: ${state.bag.labu})</span></strong></div><h3>Yang sudah diundang</h3>${NPC_KEYS.map(k=>objectiveHTML({done:state.invited.includes(k),text:STORY.npcs[k].name+' · '+STORY.npcs[k].role})).join('')}<div class="actions">${actionButton('donate','Sumbangkan bahan di tas','secondary',canDonate?'':'disabled')}${actionButton('festival','Mulai Pesta Panen','primary',readyForFestival()?'':'disabled')}</div><p class="small muted">Undang warga dengan mengajak mereka bicara pada bab ini. Tidak ada batas hari untuk menyiapkan pesta.</p>`);
+}
+function donate(){if(state.chapter!==2)return;for(const [k,goal] of [['wortel',2],['labu',1]]){const n=Math.min(state.bag[k],goal-state.donated[k]);state.bag[k]-=n;state.donated[k]+=n;}toast('Nila menerima hasil kebunmu. Terima kasih!');gameAudio.play('harvest');refreshHUD();save();openFestivalSupplies();}
+function startFestival(){
+ if(!readyForFestival())return;
+ closeModal();state.chapter=3;state.completedDay=state.day;state.hour=18.8;state.energy=100;
+ world.setFestival(true);world.player.position.set(2,0,4);target.copy(world.player.position);distance=25;
+ syncAudio();gameAudio.play('festival');
+ const lines=[...STORY.chapters[2].complete,...STORY.ending];recordStory('Pesta Panen · Musim untuk pulang',lines);save();showDialogue(lines,openEpilogue);
+}
+function openEpilogue(){openModal('Di sini, aku tumbuh kembali',`<p class="end-heading">Cerita utama selesai pada hari ${state.completedDay||state.day}.</p><p>Aruna memutuskan menetap di Lembah Embun. Kincir berputar, meja pesta kembali terisi, dan buku sketsanya punya halaman pertama yang baru.</p><p>Kamu telah memanen ${Object.values(state.harvested).reduce((a,b)=>a+b,0)} tanaman dan menjual hasil kebun senilai ${state.earned} koin. Besok masih ada tanah untuk ditanami.</p><p class="quest-note">Seluruh cerita dapat dibaca lagi di Jurnal. Kebun tetap bisa dimainkan setelah ending.</p><div class="actions">${actionButton('continue','Kembali merawat kebun')}${actionButton('journal','Baca buku kenangan','secondary')}</div>`);}
+
+// ── Calendar and rest ───────────────────────────────────────────────────────
+function openHome(){const thirsty=state.plots.filter(p=>p.crop&&p.growth<CROPS[p.crop].days&&!p.watered).length;openModal('Rumah Nenek Suri',`<p>Seprai bersih, buku sketsa di meja, dan jendela yang menghadap kebun. Tidur akan memulihkan seluruh energi dan memulai hari baru.</p><p class="quest-note">${thirsty?`${thirsty} tanaman belum disiram hari ini. Tanaman itu tidak tumbuh malam ini, tetapi tetap hidup.`:'Semua tanaman yang perlu air sudah disiram. Kebun siap menyambut pagi.'}</p><div class="actions">${actionButton('sleep','Tidur sampai pagi')}${actionButton('continue','Kembali ke kebun','secondary')}</div>`);}
+function nextDay(automatic=false){
+ if(transitioning)return;
+ closeModal();pauseInput();transitioning=true;
+ gameAudio.play('sleep');
+ let grown=0;
+ state.plots.forEach((p,i)=>{if(p.crop&&p.watered&&p.growth<CROPS[p.crop].days){p.growth++;if(p.growth===CROPS[p.crop].days)grown++;}p.watered=false;world.setPlot(i,p);});
+ state.day++;state.hour=6;state.energy=100;world.player.position.set(-11,0,.4);target.copy(world.player.position);
+ $('new-day-label').textContent=`Hari ${state.day} · Musim Tunas`;$('day-flash').classList.add('active');
+ refreshHUD();save();
+ setTimeout(()=>{$('day-flash').classList.remove('active');transitioning=false;gameAudio.play('morning');toast(`${automatic?'Sudah larut, Aruna pulang beristirahat. ':''}Pagi yang baru. ${grown?`${grown} tanaman siap dipanen!`:'Energi kembali penuh.'}`);},950);
+}
+
+// ── Inventory, journal and help ──────────────────────────────────────────────
+function openInventory(){openModal('Tas Aruna',`<p class="muted small">Pilih benih di bawah untuk langsung membawanya ke kebun.</p><h3>Benih</h3>${CROP_KEYS.map(k=>`<div class="inventory-row"><div><strong>${CROPS[k].name} × ${state.seeds[k]}</strong><br><span class="small muted">${CROPS[k].days} malam tersiram</span></div>${actionButton('seed-'+k,'Pilih benih','secondary')}</div>`).join('')}<h3>Hasil panen</h3>${CROP_KEYS.map(k=>`<div class="inventory-row"><span>${CROPS[k].name} × ${state.bag[k]}</span><span>${CROPS[k].price} koin / buah</span></div>`).join('')}<div class="inventory-row"><span>Ikan × ${state.bag.ikan}</span><span>18 koin / ekor</span></div><p class="muted small">${saleValue()?`Nilai seluruh hasil di tas: ${saleValue()} koin. Jual di peti dekat kebun.`:'Tas panen masih kosong. Pilih Keranjang (4) dan tekan E di dekat tanaman matang.'}</p>`);}
+function openJournal(){
+ openModal('Catatan dari Lembah Embun',`<p>${STORY.protagonist.background}</p><p class="quest-note">${STORY.premise}</p>${STORY.chapters.map((ch,i)=>`<section class="journal-chapter"><span class="modal-kicker">${i<state.chapter?'Selesai':i===state.chapter?'Sedang dijalani':'Halaman berikutnya'}</span><h3>${ch.title}</h3><p>${ch.description}</p>${i===state.chapter?objectives().map(objectiveHTML).join(''):''}<p class="small muted">${ch.hint}</p></section>`).join('')}${state.chapter===2?`<h3>Undangan pesta</h3>${NPC_KEYS.map(k=>objectiveHTML({done:state.invited.includes(k),text:STORY.npcs[k].name})).join('')}`:''}<h3>Tetangga kita</h3>${NPC_KEYS.map(k=>`<p><strong>${STORY.npcs[k].name} · ${STORY.npcs[k].role}</strong><br><span class="small">${STORY.npcs[k].personality}</span></p>`).join('')}<h3>Buku kenangan</h3>${state.journal.length?state.journal.map(e=>`<section class="journal-entry"><strong>${e.title}</strong>${e.lines.map(l=>`<p><b>${l.speaker}:</b> ${l.text}</p>`).join('')}</section>`).join(''):'<p>Kenangan pertama akan ditulis ketika kamu pulang ke kebun.</p>'}`);
+}
+function audioControlsHTML(){
+ return `<section class="audio-controls" aria-label="Pengaturan suara"><div class="row spread"><h3>Suara kebun</h3>${actionButton('sound',`Suara: ${state.sound?'aktif':'mati'}`,'secondary',`aria-pressed="${state.sound}"`)}</div><p class="small muted">Petikan lembut di siang hari, nada kotak musik di malam hari, dan lagu pesta saat panen dirayakan.</p>${[['music','Musik latar'],['effects','Efek & suara alam']].map(([key,label])=>`<div class="audio-setting"><label for="volume-${key}">${label}</label><output id="volume-${key}-value" for="volume-${key}">${Math.round(state.audioSettings[key]*100)}%</output><input id="volume-${key}" data-volume="${key}" type="range" min="0" max="100" step="1" value="${Math.round(state.audioSettings[key]*100)}" ${state.sound?'':'disabled'}></div>`).join('')}<p class="small muted">Tekan M atau tombol speaker untuk mematikan semua suara. Pilihan volume tersimpan otomatis.</p></section>`;
+}
+function openHelp(){
+ openModal('Istirahat sebentar',`<p class="muted">Waktu berhenti selama menu ini terbuka.</p>${audioControlsHTML()}<h3>Cara bermain</h3><div class="help-grid"><kbd>W A S D</kbd><span>Berjalan mengikuti arah kamera.</span><kbd>Mouse</kbd><span>Tahan dan geser untuk orbit; scroll untuk zoom.</span><kbd>← / →</kbd><span>Putar kamera dengan keyboard.</span><kbd>1 · 2 · 3 · 4</kbd><span>Cangkul, benih, penyiram, keranjang.</span><kbd>R</kbd><span>Ganti jenis benih.</span><kbd>E</kbd><span>Gunakan alat atau berinteraksi dengan objek terdekat.</span><kbd>B / J</kbd><span>Tas / jurnal cerita dan quest.</span><kbd>M</kbd><span>Aktifkan atau matikan musik dan efek suara.</span><kbd>Esc</kbd><span>Tutup dialog atau buka menu jeda.</span></div><h3>Hari-hari di kebun</h3><p>Cangkul petak, tanam, siram, lalu tidur di rumah. Tanaman tumbuh sekali setiap pergantian hari jika sudah disiram. Tanah yang kering hanya membuatnya menunggu.</p><p>Satu hari berlangsung sekitar 5 menit. Tengah malam Aruna otomatis pulang. Energi yang habis tidak menghalangi berjalan atau bicara. Air penyiram selalu tersedia.</p><p>Jual hasil di peti dekat kebun. Sari menjual benih dan roti; Bima menemani di dermaga. Tanpa batas hari, semua quest bisa dilanjutkan kapan saja.</p><div class="actions">${actionButton('continue','Kembali bermain')}${actionButton('save','Simpan sekarang','secondary')}${actionButton('restart','Mulai ulang…','secondary')}</div><p class="small muted">Simpanan memakai penyimpanan lokal browser, khusus perangkat dan alamat file ini. Internet diperlukan untuk memuat Three.js dari CDN.</p>`);
+}
+function confirmNewGame(){openModal('Mulai cerita baru?',`<p>Kemajuan kebun yang tersimpan di browser ini akan diganti. Aruna akan kembali ke hari pertama.</p><div class="actions">${actionButton('confirm-new','Ya, mulai hari pertama')}${actionButton('continue','Batalkan','secondary')}</div>`);}
+$('modal-content').addEventListener('click',e=>{
+ const button=e.target.closest('[data-action]');if(!button||button.disabled)return;const a=button.dataset.action;
+ if(a.startsWith('buy-'))return buy(a.slice(4));
+ if(a.startsWith('seed-')){selectSeed(a.slice(5));closeModal();return;}
+ if(a==='continue')closeModal();
+ if(a==='sleep')nextDay();
+ if(a==='sell-safe')sellHarvest(true);
+ if(a==='sell-all')sellHarvest(false);
+ if(a==='donate')donate();
+ if(a==='festival')startFestival();
+ if(a==='journal')openJournal();
+ if(a==='save')save(true);
+ if(a==='sound'){toggleSound();openHelp();}
+ if(a==='restart')confirmNewGame();
+ if(a==='confirm-new')startGame(false);
+ if(a==='bread'&&state.money>=15&&state.energy<100){state.money-=15;state.energy=Math.min(100,state.energy+35);toast('Roti hangat. +35 energi.');gameAudio.play('eat');refreshHUD();save();openShop();}
+ if(a==='aid'&&canGetAid()){state.seeds.lobak+=3;state.aidDay=state.day;toast('Sari memberimu 3 benih lobak. Mulai lagi pelan-pelan.');refreshHUD();save();openShop();}
+});
+
+$('modal-content').addEventListener('input',e=>{
+ const key=e.target.dataset.volume;if(!['music','effects'].includes(key))return;
+ state.audioSettings[key]=clamp(Number(e.target.value)/100,0,1);
+ $(`volume-${key}-value`).textContent=`${Math.round(state.audioSettings[key]*100)}%`;
+ syncAudio();save();
+});
+
+// ── Context-sensitive interactions and HUD ───────────────────────────────────
+function findNearest(){
+ const p=world.player.position;let best=null,score=Infinity;
+ world.plots.forEach((plot,index)=>{const d=Math.hypot(p.x-plot.x,p.z-plot.z);if(d<1.65&&d<score){score=d;best={type:'plot',index,x:plot.x,z:plot.z};}});
+ for(const item of world.interactables){const d=Math.hypot(p.x-item.x,p.z-item.z);if(d<(item.radius||2.25)&&d<score){score=d;best=item;}}
+ return best;
+}
+function plotLabel(p){
+ if(!p.tilled)return ['Petak kosong','1 Cangkul · E untuk menggemburkan'];
+ if(!p.crop)return state.tool===1?[`Tanam ${CROPS[state.seed].name}`,`${state.seeds[state.seed]} benih tersisa · 2 energi`]:['Tanah gembur','2 Benih · pilih jenis, lalu tekan E'];
+ const c=CROPS[p.crop];
+ if(p.growth>=c.days)return [`${c.name} siap panen`,'4 Keranjang · E untuk memanen'];
+ return [`${c.name} · ${p.growth} / ${c.days} malam`,p.watered?'Sudah disiram · tidur agar tumbuh':'3 Penyiram · E untuk menyiram'];
+}
+function updateInteraction(){
+ near=running?findNearest():null;ring.visible=!!near&&!modalOpen&&!dialogue;
+ if(near)ring.position.set(near.x,.09,near.z);
+ let title='Jelajahi kebun dan sapa tetangga',hint='Dekati petak, warga, rumah, atau peti';
+ if(near?.type==='plot')[title,hint]=plotLabel(state.plots[near.index]);
+ else if(near?.type==='npc'){title=`Bicara dengan ${STORY.npcs[near.id]?.name||near.label}`;hint=STORY.npcs[near.id]?.role||'';}
+ else if(near?.type==='home'){title='Rumah Nenek Suri';hint='Tidur sampai pagi · pulihkan energi';}
+ else if(near?.type==='sell'){title='Peti penjualan';hint=`Hasil di tas bernilai ${saleValue()} koin`;}
+ else if(near?.type==='fish'){title='Memancing di dermaga';hint='6 energi · ikan masuk tas';}
+ $('interaction-label').innerHTML=title+`<small>${hint}</small>`;$('interaction').disabled=!near;
+}
+function interact(){if(!running||modalOpen||dialogue||transitioning)return;near=findNearest();if(!near){toast('Dekati petak, warga, rumah, atau peti penjualan.');return;}if(near.type==='plot')farm(near.index);else if(near.type==='npc')speakNPC(near.id);else if(near.type==='home')openHome();else if(near.type==='sell')openShipping();else if(near.type==='fish')fish();}
+function refreshTools(){
+ document.querySelectorAll('.tool').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.tool)===state.tool));
+ $('seed-strip').hidden=state.tool!==1;
+ $('touch-pad').style.bottom=state.tool===1?'212px':'';
+ $('seed-strip').innerHTML=CROP_KEYS.map(k=>`<button class="seed-option" data-seed="${k}" aria-pressed="${state.seed===k}">${CROPS[k].name} <strong>${state.seeds[k]}</strong></button>`).join('');
+}
+function refreshHUD(){
+ $('day-number').textContent=String(state.day).padStart(2,'0');
+ $('calendar-label').textContent=`${['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'][(state.day-1)%7]} · Musim Tunas`;
+ $('money').textContent=state.money.toLocaleString('id-ID');$('energy-number').textContent=`${state.energy} / 100`;
+ $('energy-fill').style.width=state.energy+'%';$('energy-fill').style.background=state.energy<20?'#ac6539':'#587849';
+ document.querySelector('.energy-track').setAttribute('aria-valuenow',state.energy);
+ const chapter=STORY.chapters[state.chapter];
+ $('quest-preview').innerHTML=`<span class="chapter-tag">${state.chapter<3?`Cerita utama · ${state.chapter+1} dari 3 bab`:'Cerita selesai · Hidup di Lembah Embun'}</span><h2>${chapter?chapter.title.split(' · ')[1]:'Musim untuk pulang'}</h2>${objectives().map(objectiveHTML).join('')}<div class="quest-footer"><span>Buka catatan lengkap</span><span>J</span></div>`;
+ refreshTools();refreshClock();refreshAudioUI();
+}
+function refreshClock(){const h=state.hour;const minute=Math.floor((h%1)*60/10)*10;$('clock-label').textContent=`${String(Math.floor(h)).padStart(2,'0')}.${String(minute).padStart(2,'0')} · ${h<11?'Pagi':h<16?'Siang':h<19.5?'Senja':'Malam'}`;$('time-icon').textContent=h>=19.5?'☾':'☀';const p=world.player.position;$('area-label').textContent=p.x>14&&p.z>9?'Dermaga Bima':p.x>0?'Desa Lembah Embun':'Kebun Nenek Suri';}
+document.querySelectorAll('.tool').forEach(b=>b.addEventListener('click',()=>selectTool(Number(b.dataset.tool))));
+$('seed-strip').addEventListener('click',e=>{const b=e.target.closest('[data-seed]');if(b)selectSeed(b.dataset.seed);});
+$('interaction').addEventListener('click',interact);
+$('bag-button').addEventListener('click',openInventory);$('journal-button').addEventListener('click',openJournal);$('quest-preview').addEventListener('click',openJournal);$('menu-button').addEventListener('click',openHelp);
+
+// The map is drawn from world positions, so the player marker always stays true.
+const map=$('minimap').getContext('2d');
+function drawMap(){
+ const w=290,h=248;map.clearRect(0,0,w,h);map.fillStyle='#a9bb88';map.fillRect(0,0,w,h);
+ const point=(x,z)=>[w/2+x*4.4,h/2+z*4.4];
+ map.strokeStyle='#e0d4ae';map.lineWidth=11;map.lineCap='round';map.beginPath();for(const [x,z] of [[-13,0],[3,0],[15,0],[15,14],[20,14]]){const p=point(x,z);if(x===-13)map.moveTo(...p);else map.lineTo(...p);}map.stroke();map.beginPath();map.moveTo(...point(3,-12));map.lineTo(...point(3,8));map.stroke();
+ map.fillStyle='#759d9b';map.beginPath();map.ellipse(...point(23,15),26,23,0,0,Math.PI*2);map.fill();
+ map.fillStyle='#9a653f';world.plots.forEach(p=>{const [x,y]=point(p.x,p.z);map.fillRect(x-4,y-4,8,8);});
+ for(const [x,z] of [[-11,-4],[4,-13],[12,-12],[14,0],[-3,-14.1],[23,4.3]]){const p=point(x,z);map.fillStyle='#a75f42';map.fillRect(p[0]-8,p[1]-6,16,12);}
+ map.font='bold 12px system-ui';map.textAlign='center';map.textBaseline='middle';
+ for(const k of NPC_KEYS){const npc=world.npcs[k];if(!npc)continue;const p=point(npc.position.x,npc.position.z);map.fillStyle='#f8edcc';map.beginPath();map.arc(...p,8,0,Math.PI*2);map.fill();map.fillStyle='#304235';map.fillText(STORY.npcs[k].name[0],...p);}
+ const pp=point(world.player.position.x,world.player.position.z);map.save();map.translate(...pp);map.rotate(-world.player.rotation.y+Math.PI);map.fillStyle='#fffdf0';map.strokeStyle='#304235';map.lineWidth=2;map.beginPath();map.moveTo(0,-8);map.lineTo(6,6);map.lineTo(0,3);map.lineTo(-6,6);map.closePath();map.fill();map.stroke();map.restore();map.fillStyle='#304235';map.textAlign='left';map.font='11px system-ui';map.fillText('U ↑',10,14);
+}
+
+// ── Procedural soundtrack and sound effects ────────────────────────────────
+// Suara disintesis di browser; tidak memerlukan berkas audio atau koneksi tambahan.
+function createGameAudio() {
+  const clampVolume = (value, fallback) => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : fallback;
+  let settings = { enabled: true, musicVolume: 0.42, sfxVolume: 0.65, phase: 'day', ducked: false };
+  let context = null, musicBus = null, sfxBus = null, master = null;
+  let noiseBuffer = null, pluckWave = null, scheduler = null, suspendTimer = null;
+  let paused = true, nextStep = 0, stepIndex = 0, nextAmbience = 0;
+  let scheduledNotes = 0, lastError = '';
+  const voices = new Set(), lastPlayed = new Map(), sfxCounts = Object.create(null);
+  const MAX_VOICES = 64;
+  const hz = midi => 440 * Math.pow(2, (midi - 69) / 12);
+  const themes = {
+    day: {
+      bpm: 82,
+      chords: [[50,4],[55,4],[59,3],[57,4],[50,4],[54,3],[55,4],[57,4], [59,3],[55,4],[50,4],[57,4],[55,4],[57,4],[50,4],[50,4]],
+      melody: [
+        [74,null,78,76,null,74,69,null], [71,null,74,null,78,null,76,null],
+        [78,null,81,78,null,76,74,null], [73,null,76,null,69,null,null,null],
+        [74,null,78,null,81,78,76,null], [73,null,76,null,78,null,76,null],
+        [74,null,71,69,null,71,74,null], [73,null,69,null,null,null,null,null],
+        [78,null,81,null,83,81,78,null], [79,null,78,74,null,71,74,null],
+        [78,null,76,null,74,null,69,null], [73,null,76,78,null,76,null,null],
+        [74,null,71,null,74,76,78,null], [76,null,73,69,null,73,76,null],
+        [78,null,76,null,74,null,null,null], [69,null,74,null,null,null,null,null]
+      ]
+    },
+    night: {
+      bpm: 62,
+      chords: [[47,3],[55,4],[50,4],[57,4],[47,3],[54,3],[55,4],[57,4], [55,4],[50,4],[54,3],[47,3],[55,4],[57,4],[50,4],[50,4]],
+      melody: [
+        [78,null,null,null,74,null,73,null], [74,null,null,null,71,null,null,null],
+        [69,null,null,74,null,null,78,null], [76,null,null,null,73,null,null,null],
+        [74,null,null,null,78,null,null,null], [73,null,null,69,null,null,null,null],
+        [71,null,null,null,74,null,76,null], [73,null,null,null,null,null,null,null],
+        [79,null,null,null,78,null,74,null], [78,null,null,null,74,null,null,null],
+        [76,null,null,73,null,null,69,null], [71,null,null,null,74,null,null,null],
+        [74,null,null,null,71,null,69,null], [73,null,null,null,76,null,null,null],
+        [78,null,null,null,74,null,null,null], [74,null,null,null,null,null,null,null]
+      ]
+    },
+    festival: {
+      bpm: 98,
+      chords: [[50,4],[55,4],[50,4],[57,4],[59,3],[55,4],[57,4],[50,4], [55,4],[50,4],[59,3],[57,4],[55,4],[57,4],[50,4],[50,4]],
+      melody: [
+        [74,null,78,81,78,null,76,74], [71,null,74,79,78,null,74,null],
+        [78,null,81,null,86,81,78,null], [76,null,73,69,73,null,76,null],
+        [78,null,81,83,81,null,78,76], [74,null,71,74,79,null,78,null],
+        [76,null,73,69,73,76,78,null], [74,null,null,null,69,null,74,null],
+        [79,null,78,74,71,null,74,76], [78,null,81,86,81,null,78,null],
+        [83,null,81,78,76,null,74,null], [73,null,76,81,78,null,76,null],
+        [74,null,79,78,74,null,71,null], [73,null,76,78,76,73,69,null],
+        [74,null,78,81,78,null,74,null], [69,null,74,null,null,null,null,null]
+      ]
+    }
+  };
+
+  function buildContext() {
+    if (context) return true;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) { lastError = 'Browser ini tidak mendukung Web Audio.'; return false; }
+    context = new AudioContextClass();
+    musicBus = context.createGain(); sfxBus = context.createGain(); master = context.createGain();
+    musicBus.gain.value = 0; sfxBus.gain.value = 0; master.gain.value = 0.72;
+    const compressor = context.createDynamicsCompressor();
+    compressor.threshold.value = -16; compressor.knee.value = 18;
+    compressor.ratio.value = 3; compressor.attack.value = 0.012; compressor.release.value = 0.23;
+    musicBus.connect(master); sfxBus.connect(master); master.connect(compressor); compressor.connect(context.destination);
+    const real = new Float32Array(9), imaginary = new Float32Array([0,1,0.30,0.15,0.065,0.034,0.017,0.008,0.004]);
+    pluckWave = context.createPeriodicWave(real, imaginary);
+    noiseBuffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
+    const samples = noiseBuffer.getChannelData(0);
+    let softened = 0;
+    for (let i = 0; i < samples.length; i++) {
+      const white = Math.random() * 2 - 1;
+      softened = softened * 0.79 + white * 0.21;
+      samples[i] = softened * 0.65 + white * 0.20;
+    }
+    return true;
+  }
+
+  function gainTo(node, value, duration = 0.07) {
+    if (!node || !context) return;
+    const now = context.currentTime;
+    node.gain.cancelScheduledValues(now);
+    node.gain.setTargetAtTime(value, now, duration);
+  }
+
+  function applyVolumes() {
+    const audible = settings.enabled && !paused;
+    gainTo(musicBus, audible ? settings.musicVolume * (settings.ducked ? 0.48 : 1) : 0);
+    gainTo(sfxBus, audible ? settings.sfxVolume : 0, 0.025);
+  }
+
+  function releaseVoice(voice, immediately = false) {
+    if (voice.done) return;
+    if (immediately) {
+      voice.done = true;
+      voices.delete(voice);
+      voice.source.onended = null;
+      for (const node of voice.nodes) { try { node.disconnect(); } catch (_) {} }
+      return;
+    }
+    if (voice.stopping) return;
+    voice.stopping = true;
+    const now = context.currentTime;
+    voice.envelope.gain.cancelScheduledValues(now);
+    voice.envelope.gain.setValueAtTime(Math.max(0, voice.envelope.gain.value), now);
+    voice.envelope.gain.linearRampToValueAtTime(0, now + 0.025);
+    try { voice.source.stop(now + 0.03); } catch (_) { releaseVoice(voice, true); }
+  }
+
+  // Tiap sumber melepas seluruh node miliknya setelah envelope selesai.
+  function voice({ when, duration = 0.5, volume = 0.12, frequency = 440, endFrequency,
+                   wave = 'sine', cutoff = 3500, filterType = 'lowpass', pan = 0,
+                   attack = 0.008, bus = 'sfx', noise = false }) {
+    if (!context || context.state !== 'running' || !settings.enabled || paused || voices.size >= MAX_VOICES) return;
+    const start = Math.max(context.currentTime + 0.002, when || context.currentTime + 0.005);
+    const source = noise ? context.createBufferSource() : context.createOscillator();
+    const filter = context.createBiquadFilter(), envelope = context.createGain();
+    const nodes = [source, filter, envelope];
+    if (noise) { source.buffer = noiseBuffer; source.loop = true; }
+    else {
+      if (wave === 'pluck') source.setPeriodicWave(pluckWave); else source.type = wave;
+      source.frequency.setValueAtTime(frequency, start);
+      if (endFrequency) source.frequency.exponentialRampToValueAtTime(endFrequency, start + duration * 0.8);
+    }
+    filter.type = filterType; filter.frequency.value = cutoff; filter.Q.value = filterType === 'bandpass' ? 0.7 : 0.5;
+    envelope.gain.setValueAtTime(0, start);
+    envelope.gain.linearRampToValueAtTime(Math.max(0.0001, volume), start + attack);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, start + Math.max(attack + 0.02, duration));
+    envelope.gain.linearRampToValueAtTime(0, start + duration + 0.025);
+    source.connect(filter); filter.connect(envelope);
+    if (typeof context.createStereoPanner === 'function') {
+      const panner = context.createStereoPanner(); panner.pan.value = pan;
+      envelope.connect(panner); panner.connect(bus === 'music' ? musicBus : sfxBus); nodes.push(panner);
+    } else envelope.connect(bus === 'music' ? musicBus : sfxBus);
+    const item = { source, envelope, nodes, bus, done: false, stopping: false };
+    voices.add(item);
+    source.onended = () => releaseVoice(item, true);
+    if (noise) source.start(start, Math.random() * 0.8); else source.start(start);
+    source.stop(start + duration + 0.04);
+  }
+
+  function note(midi, when, { duration = 0.8, volume = 0.10, instrument = 'pluck', pan = 0, bus = 'music' } = {}) {
+    voice({ when, duration, volume, frequency: hz(midi), wave: instrument === 'bell' ? 'sine' : instrument,
+      cutoff: instrument === 'pluck' ? 2350 : 5500, pan, bus, attack: instrument === 'sine' ? 0.035 : 0.006 });
+    if (instrument === 'bell') voice({ when: when + 0.001, duration: duration * 0.46, volume: volume * 0.14,
+      frequency: hz(midi) * 2.76, cutoff: 6000, pan, bus, attack: 0.004 });
+    if (bus === 'music') scheduledNotes++;
+  }
+
+  function musicStep(index, when) {
+    const mode = settings.phase, theme = themes[mode], bar = Math.floor(index / 8) % theme.chords.length, beat = index % 8;
+    const [root, third] = theme.chords[bar], chord = [root, root + third, root + 7];
+    const night = mode === 'night', festival = mode === 'festival';
+    const melody = theme.melody[bar][beat];
+    if (beat === 0 || (beat === 4 && !night)) {
+      note(root - 12 + (beat === 4 ? 7 : 0), when, { instrument: 'sine', volume: night ? 0.095 : 0.13, duration: night ? 2.2 : 1.4, pan: -0.08 });
+    }
+    const pattern = night ? [0,-1,2,-1,1,-1,2,-1] : [0,-1,1,2,0,1,-1,2];
+    if (pattern[beat] >= 0 && !(bar === 15 && beat > 3)) {
+      note(chord[pattern[beat]] + 12, when + 0.012, { instrument: night ? 'bell' : 'pluck',
+        duration: night ? 1.6 : 0.8, volume: night ? 0.042 : 0.073, pan: beat % 4 < 2 ? -0.3 : 0.25 });
+    }
+    if (melody !== null) note(melody, when + 0.022, { instrument: night ? 'bell' : 'pluck',
+      duration: night ? 2 : (festival ? 0.72 : 1.2), volume: night ? 0.075 : 0.125, pan: 0.12 });
+    if (festival && beat % 2 === 1) voice({ when, duration: 0.065, volume: 0.018,
+      noise: true, filterType: 'highpass', cutoff: 2200, bus: 'music', pan: -0.25 });
+  }
+
+  function ambience(when) {
+    if (settings.sfxVolume <= 0 || settings.ducked) return;
+    const pan = Math.random() * 1.3 - 0.65;
+    if (settings.phase === 'night') {
+      for (let i = 0; i < 3; i++) voice({ when: when + i * 0.15, duration: 0.075, volume: 0.007,
+        frequency: 3700, endFrequency: 3400, pan, cutoff: 4800, attack: 0.008 });
+    } else {
+      const base = 1600 + Math.random() * 500;
+      for (let i = 0; i < 2; i++) voice({ when: when + i * 0.22, duration: 0.13, volume: 0.017,
+        frequency: base * (i ? 1.15 : 1), endFrequency: base * 1.5, pan, cutoff: 4000, attack: 0.025 });
+    }
+  }
+
+  // Clock audio menjaga tempo ketika frame 3D melambat; interval hanya menyiapkan not berikutnya.
+  function schedule() {
+    if (!context || context.state !== 'running' || !settings.enabled || paused) return;
+    const now = context.currentTime;
+    if (nextStep < now - 0.1) nextStep = now + 0.03;
+    while (nextStep < now + 0.20) {
+      if (settings.musicVolume > 0) musicStep(stepIndex, nextStep);
+      nextStep += 30 / themes[settings.phase].bpm;
+      stepIndex = (stepIndex + 1) % 128;
+    }
+    if (nextAmbience < now) {
+      ambience(now + 0.02);
+      nextAmbience = now + 6 + Math.random() * 6;
+    }
+  }
+
+  function runScheduler() {
+    if (scheduler !== null || !context || context.state !== 'running' || paused || !settings.enabled) return;
+    nextStep = context.currentTime + 0.06; nextAmbience = context.currentTime + 2.5;
+    schedule(); scheduler = window.setInterval(schedule, 60);
+  }
+
+  function stopScheduler() {
+    if (scheduler !== null) { window.clearInterval(scheduler); scheduler = null; }
+  }
+
+  function cancelSuspend() {
+    if (suspendTimer !== null) { window.clearTimeout(suspendTimer); suspendTimer = null; }
+  }
+
+  function silence() {
+    stopScheduler(); applyVolumes();
+    for (const item of voices) releaseVoice(item);
+  }
+
+  function sync(next = {}) {
+    const previous = settings;
+    settings = {
+      enabled: typeof next.enabled === 'boolean' ? next.enabled : previous.enabled,
+      musicVolume: clampVolume(next.musicVolume, previous.musicVolume),
+      sfxVolume: clampVolume(next.sfxVolume, previous.sfxVolume),
+      phase: Object.hasOwn(themes, next.phase) ? next.phase : previous.phase,
+      ducked: typeof next.ducked === 'boolean' ? next.ducked : previous.ducked
+    };
+    if (!context) return;
+    if (settings.phase !== previous.phase) {
+      for (const item of voices) if (item.bus === 'music') releaseVoice(item);
+      stepIndex = 0; nextStep = context.currentTime + 0.10;
+    }
+    if (settings.musicVolume === 0 && previous.musicVolume !== 0) {
+      for (const item of voices) if (item.bus === 'music') releaseVoice(item);
+    }
+    if (settings.enabled !== previous.enabled || settings.musicVolume !== previous.musicVolume ||
+        settings.sfxVolume !== previous.sfxVolume || settings.ducked !== previous.ducked) applyVolumes();
+    if (!settings.enabled) { if (previous.enabled) silence(); }
+    else if (!paused && context.state === 'running') runScheduler();
+  }
+
+  function start(next = {}) {
+    sync(next);
+    if (!settings.enabled) return Promise.resolve(false);
+    cancelSuspend(); paused = false;
+    try {
+      if (!buildContext()) { paused = true; return Promise.resolve(false); }
+      return context.resume().then(() => {
+        if (paused || !settings.enabled || context.state !== 'running') return false;
+        lastError = ''; applyVolumes(); runScheduler(); return true;
+      }).catch(error => { lastError = error.message || String(error); return false; });
+    } catch (error) { lastError = error.message || String(error); paused = true; return Promise.resolve(false); }
+  }
+
+  function pause() {
+    if (paused) return;
+    paused = true; cancelSuspend();
+    if (!context) return;
+    silence();
+    // Beri envelope 30 ms untuk meredam suara sebelum clock audio dibekukan.
+    suspendTimer = window.setTimeout(() => {
+      suspendTimer = null;
+      if (!paused) return;
+      context.suspend().then(() => {
+        if (paused) for (const item of voices) releaseVoice(item, true);
+      }).catch(error => { lastError = error.message || String(error); });
+    }, 70);
+  }
+
+  const throttles = { hoe: 0.12, plant: 0.12, water: 0.20, harvest: 0.12, coin: 0.10, fish: 0.20,
+    step: 0.29, dialogue: 0.23, ui: 0.055, sleep: 0.5, morning: 0.5, quest: 0.5, festival: 0.5, eat: 0.20, error: 0.25 };
+  function play(name, options = {}) {
+    if (!Object.hasOwn(throttles, name) || !context || context.state !== 'running' ||
+        paused || !settings.enabled || settings.sfxVolume <= 0) return false;
+    const now = context.currentTime;
+    if (now - (lastPlayed.get(name) ?? -Infinity) < throttles[name]) return false;
+    lastPlayed.set(name, now); sfxCounts[name] = (sfxCounts[name] || 0) + 1;
+    const time = now + 0.008, level = clampVolume(options.volume, 1);
+    const effect = params => voice({ when: time, ...params, volume: (params.volume ?? 0.12) * level });
+    const chime = (notes, spacing = 0.10, volume = 0.15, instrument = 'bell', duration = 0.5) => {
+      notes.forEach((midi, index) => note(midi, time + index * spacing,
+        { bus: 'sfx', instrument, volume: volume * level, duration, pan: 0 }));
+    };
+    switch (name) {
+      case 'hoe':
+        effect({ noise: true, duration: 0.16, volume: 0.28, cutoff: 750 });
+        effect({ frequency: 105, endFrequency: 48, duration: 0.18, volume: 0.22 }); break;
+      case 'plant':
+        effect({ noise: true, duration: 0.08, volume: 0.16, cutoff: 1000 });
+        effect({ frequency: 470, endFrequency: 260, duration: 0.12, volume: 0.12, wave: 'triangle' }); break;
+      case 'water':
+        effect({ noise: true, duration: 0.65, volume: 0.27, cutoff: 2400, filterType: 'bandpass', attack: 0.08 });
+        for (let i = 0; i < 4; i++) effect({ when: time + 0.08 + i * 0.11, frequency: 1050 + i * 130,
+          endFrequency: 510 + i * 70, duration: 0.075, volume: 0.04 }); break;
+      case 'harvest': chime([69,74,78], 0.075, 0.16, 'pluck'); break;
+      case 'coin': chime([83,86,90], 0.09, 0.12, 'bell', 0.32); break;
+      case 'fish':
+        effect({ noise: true, duration: 0.35, volume: 0.23, cutoff: 2200, filterType: 'bandpass', attack: 0.015 });
+        chime([74,78,81], 0.12, 0.14, 'pluck'); break;
+      case 'step':
+        effect({ noise: true, duration: 0.065, volume: 0.115, cutoff: 650 + Math.random() * 300, attack: 0.008 });
+        effect({ frequency: 75 + Math.random() * 15, endFrequency: 45, duration: 0.07, volume: 0.04 }); break;
+      case 'dialogue': chime([74,78], 0.075, 0.055, 'pluck', 0.22); break;
+      case 'ui': effect({ frequency: 680, endFrequency: 400, duration: 0.085, volume: 0.09, wave: 'triangle' }); break;
+      case 'sleep': chime([78,74,69,62], 0.22, 0.11, 'bell', 0.9); break;
+      case 'morning': chime([62,69,74,78], 0.18, 0.14, 'pluck', 1.0); break;
+      case 'quest': chime([74,78,81,86], 0.15, 0.15, 'bell', 0.85); break;
+      case 'festival': chime([74,78,81,86,81,86], 0.14, 0.15, 'pluck', 0.8); break;
+      case 'eat':
+        for (let i = 0; i < 3; i++) effect({ when: time + i * 0.095, noise: true, duration: 0.07,
+          volume: 0.18, cutoff: 1550, filterType: 'bandpass' }); break;
+      case 'error': effect({ frequency: 185, endFrequency: 130, duration: 0.22, volume: 0.14, wave: 'triangle', cutoff: 1200 }); break;
+    }
+    return true;
+  }
+
+  return { start, sync, play, pause, get diagnostics() {
+    return { contextState: context ? context.state : 'not-created', enabled: settings.enabled, phase: settings.phase,
+      activeVoices: voices.size, schedulerRunning: scheduler !== null, scheduledNotes,
+      sfxCounts: { ...sfxCounts }, lastError, musicVolume: settings.musicVolume, sfxVolume: settings.sfxVolume,
+      ducked: settings.ducked, paused, maxVoices: MAX_VOICES };
+  } };
+}
+const gameAudio=createGameAudio();
+function currentAudioSettings(){return {enabled:running&&state.sound,musicVolume:state.audioSettings.music,sfxVolume:state.audioSettings.effects,phase:state.chapter===3?'festival':state.hour>=19.5?'night':'day',ducked:modalOpen||!!dialogue||transitioning};}
+function syncAudio(){if(document.hidden)gameAudio.pause();else gameAudio.sync(currentAudioSettings());}
+function unlockAudio(){if(running&&state.sound&&!document.hidden)gameAudio.start(currentAudioSettings());}
+function refreshAudioUI(){const b=$('sound-button');b.setAttribute('aria-pressed',state.sound);b.setAttribute('aria-label',`${state.sound?'Matikan':'Aktifkan'} musik dan efek suara (M)`);b.title=`Suara ${state.sound?'aktif':'mati'} · M`;b.querySelector('use').setAttribute('href',state.sound?'#i-sound':'#i-muted');}
+function toggleSound(){state.sound=!state.sound;if(state.sound)unlockAudio();else syncAudio();refreshAudioUI();save();}
+$('sound-button').addEventListener('click',toggleSound);
+// A previously interrupted audio context can unlock again on the next trusted gesture.
+window.addEventListener('pointerdown',unlockAudio,{capture:true});
+window.addEventListener('keydown',unlockAudio,{capture:true});
+
+// ── Keyboard, touch and start-up ────────────────────────────────────────────
+window.addEventListener('keydown',e=>{
+ if(running&&e.code==='KeyM'&&!e.repeat){e.preventDefault();toggleSound();if(modalOpen&&$('volume-music'))openHelp();return;}
+ if(e.code==='Tab'&&(modalOpen||dialogue)){
+  const container=modalOpen?$('modal'):$('dialogue'),focusable=[...container.querySelectorAll('button:not(:disabled),input:not(:disabled),[tabindex="0"]')];
+  const first=focusable[0],last=focusable.at(-1);
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}return;
+ }
+ if(dialogue){if(['KeyE','Enter','Space','Escape'].includes(e.code)){e.preventDefault();if(!e.repeat){if(e.code==='Escape')finishDialogue();else nextDialogue();}}return;}
+ if(modalOpen){if(e.code==='Escape'){e.preventDefault();closeModal();}return;}
+ if(!running||transitioning)return;
+ if(['KeyW','KeyA','KeyS','KeyD','ArrowLeft','ArrowRight'].includes(e.code)){e.preventDefault();keys.add(e.code);return;}
+ if(e.repeat)return;
+ if(e.code==='KeyE'){e.preventDefault();interact();}
+ if(/^Digit[1-4]$/.test(e.code)){e.preventDefault();selectTool(Number(e.code.at(-1))-1);}
+ if(e.code==='KeyR')selectSeed(CROP_KEYS[(CROP_KEYS.indexOf(state.seed)+1)%3]);
+ if(e.code==='KeyB')openInventory();if(e.code==='KeyJ')openJournal();if(e.code==='Escape')openHelp();
+});
+window.addEventListener('keyup',e=>keys.delete(e.code));
+window.addEventListener('blur',()=>{pauseInput();save();});
+document.addEventListener('visibilitychange',()=>{pauseInput();if(document.hidden){save();gameAudio.pause();}else unlockAudio();});
+window.addEventListener('pagehide',()=>{save();gameAudio.pause();});
+window.addEventListener('focus',unlockAudio);
+document.querySelectorAll('[data-move]').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();if(!modalOpen&&!dialogue){keys.add(b.dataset.move);b.setPointerCapture(e.pointerId);}});
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(type,()=>keys.delete(b.dataset.move));
+});
+function startGame(resume){
+ closeModal();if(dialogue){dialogue=null;$('dialogue').hidden=true;}
+ state=resume&&savedGame?savedGame:freshState();running=true;transitioning=false;
+ unlockAudio();
+ world.player.position.set(clamp(state.position.x,-27,27),0,clamp(state.position.z,-21,22));
+ if(blocked(world.player.position.x,world.player.position.z))world.player.position.set(-7,0,11);
+ target.copy(world.player.position);target.y=.6;world.setRestored(state.chapter>=2);world.setFestival(state.chapter===3);
+ state.plots.forEach((p,i)=>world.setPlot(i,p));$('title-screen').hidden=true;$('hud').hidden=false;syncInert();refreshHUD();updateInteraction();drawMap();save();
+ if(!state.introSeen){state.introSeen=true;recordStory('Lelehan embun · Hari kepulangan',STORY.intro);showDialogue(STORY.intro,()=>toast('Mulai dari petak kebun. 1 Cangkul → 2 Benih → 3 Penyiram.'));}
+ else toast(`Selamat pulang, Aruna. Hari ${state.day} menantimu.`);
+}
+$('start').textContent=savedGame?`Lanjutkan · Hari ${savedGame.day}`:'Pulang ke kebun';
+$('new-game').hidden=!savedGame;
+$('start').addEventListener('click',()=>startGame(!!savedGame));$('new-game').addEventListener('click',confirmNewGame);
+
+let previous=performance.now(),elapsed=0,uiTimer=0;
+const cameraOffset=new THREE.Vector3();
+function frame(now){
+ requestAnimationFrame(frame);
+ const dt=Math.min((now-previous)/1000,.05);previous=now;elapsed+=dt;
+ const active=running&&!modalOpen&&!dialogue&&!transitioning&&!document.hidden;
+ if(active){
+  if(keys.has('ArrowLeft'))yaw+=dt*1.4;if(keys.has('ArrowRight'))yaw-=dt*1.4;
+  movePlayer(dt);state.hour+=dt*18/DAY_SECONDS;
+  if(state.hour>=24){state.hour=23.99;nextDay(true);}
+  saveTimer+=dt;if(saveTimer>12){saveTimer=0;save();}
+ }else world.player.userData.walk=0;
+ syncAudio();
+ if(running){desiredTarget.copy(world.player.position);desiredTarget.y=.65;target.lerp(desiredTarget,reducedMotion?1:1-Math.exp(-dt*8));}
+ cameraOffset.set(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)).multiplyScalar(running?distance:45);
+ camera.position.copy(target).add(cameraOffset);camera.lookAt(target);
+ updateLight();world.update(document.hidden?0:dt,elapsed,{night:state.hour>=19.5,festival:state.chapter===3,restored:state.chapter>=2});
+ uiTimer+=dt;if(uiTimer>.12){uiTimer=0;if(running){refreshClock();updateInteraction();drawMap();}}
+ renderer.render(scene,camera);
+}
+refreshHUD();frame(performance.now());
+clearTimeout(window.bootTimer);window.gameReady=true;$('loading').hidden=true;$('title-screen').hidden=false;$('start').focus();
+// Opt-in QA access uses the same gameplay functions as the UI, with no production shortcuts.
+if(location.hash==='#test')window.__embun={get state(){return state;},get world(){return world;},get camera(){return camera;},get renderer(){return renderer;},get scene(){return scene;},get audio(){return gameAudio;},syncAudio,unlockAudio,startGame,selectTool,selectSeed,interact,nextDay,nextDialogue,finishDialogue,speakNPC,save,refreshHUD,updateInteraction,openInventory,openJournal,openHelp,openShop,openHome,openShipping,get paused(){return modalOpen||!!dialogue||transitioning;},get dialogue(){return dialogue;},closeModal};
+} catch(error) {
+ console.error('Lembah Embun:', error);
+ clearTimeout(window.bootTimer);
+ window.bootFailed('Desa belum bisa dibuka. Pastikan internet tersambung, cdn.jsdelivr.net dapat diakses, dan browser mendukung WebGL 2. Coba aktifkan akselerasi grafis atau gunakan Chrome/Firefox terbaru.');
+}
+</script>
+</body>
+</html>

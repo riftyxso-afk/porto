@@ -3,7 +3,7 @@
 import { play } from "cuelume";
 import React, { useEffect, useRef, useState } from "react";
 import BlurText from "./BlurText";
-import { story } from "@/data/content";
+import { useT } from "@/i18n/LanguageProvider";
 
 // StoryGate writes "ready" onto the document once the story has finished
 // animating in. The dock sits outside this component (it has to, so its
@@ -17,6 +17,7 @@ export const STORY_READY_ATTRIBUTE = "data-story-ready";
 //  2. "revealed" turns on when the last word finishes animating; only then do
 //     the sections below and the dock appear.
 export function StoryGate({ children }: { children: React.ReactNode }) {
+  const { story } = useT();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [armed, setArmed] = useState(false);
   const [revealed, setRevealed] = useState(false);

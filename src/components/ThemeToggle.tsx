@@ -3,9 +3,11 @@
 import * as React from "react";
 import { flushSync } from "react-dom";
 import { useTheme } from "next-themes";
+import { useT } from "@/i18n/LanguageProvider";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
+  const t = useT();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,7 +44,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
-        aria-label="Toggle theme"
+        aria-label={t.controls.theme}
         className="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       >
         <span className="w-4 h-4 rounded-full bg-zinc-300 dark:bg-zinc-600" />
@@ -55,7 +57,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={handleToggle}
-      aria-label="Toggle theme"
+      aria-label={t.controls.theme}
       data-cuelume-select=""
       className="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shadow-xs cursor-pointer"
     >

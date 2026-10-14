@@ -104,6 +104,96 @@
   animation: rise-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Usage chart. Each mark eases in once when its range or month changes, so
+   the grid and bars never snap. Delays are set inline per element. */
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* The leaderboard bar. It draws from the left edge so the row reads as one
+   thing filling up, and the fill's own width stays the score rather than being
+   animated, which would make a half-drawn bar read as a smaller model. */
+@keyframes bar-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-bar-grow-x {
+  transform-origin: left;
+  animation: bar-grow-x 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes line-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes area-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-cell-in {
+  animation: cell-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-line-draw {
+  animation: line-draw 1100ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.animate-area-fade {
+  animation: area-fade 900ms ease-out 250ms both;
+}
+
+/* Model chips settle in with a small rise, staggered per chip inline. */
+@keyframes model-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-model-in {
+  animation: model-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Like button. The burst fires on every click, the beat only while liked, so
    the resting state is still. */
 @keyframes heart-burst {
@@ -249,7 +339,13 @@
   .animate-heart-burst,
   .animate-heart-beat,
   .animate-shimmer,
-  .animate-rise-in {
+  .animate-rise-in,
+  .animate-cell-in,
+  .animate-bar-grow,
+  .animate-bar-grow-x,
+  .animate-line-draw,
+  .animate-area-fade,
+  .animate-model-in {
     animation: none;
   }
 }

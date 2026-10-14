@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>Simulasi Air - Gerstner + Refraksi Layar</title>
+<style>
+  :root {
+    --ink: #050d13;
+    --line: rgba(150, 190, 205, 0.16);
+    --text: #dce9ef;
+    --text-dim: #93aab7;
+    --accent: #4d6bfe;
+    --accent-deep: #3b57e0;
+    --radius-panel: 8px;
+    --radius-ctl: 5px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--font);
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  /* Satu-satunya elemen dengan elevasi di halaman ini: panel mengapung di atas kanvas 3D. */
+  #panel {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    width: 276px;
+    max-height: calc(100dvh - 28px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(6, 15, 22, 0.9);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9);
+    z-index: 10;
+  }
+
+  #panel-head { padding: 12px 12px 10px; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+
+  /* Logo inline, bukan <img>: halaman tetap satu file tanpa aset eksternal. */
+  .brand { display: block; height: 21px; width: auto; color: var(--accent); }
+
+  h1 { font-size: 13px; font-weight: 600; margin: 10px 0 0; line-height: 1.2; }
+  .model { margin: 3px 0 0; font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+  .sub { margin: 7px 0 0; font-size: 11px; line-height: 1.45; color: var(--text-dim); }
+
+  #presets { display: flex; gap: 4px; margin-top: 10px; }
+  .preset {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 6px 4px;
+    font: inherit;
+    font-size: 10.5px;
+    line-height: 1.2;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-ctl);
+    cursor: pointer;
+    transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  }
+  .preset:hover { color: var(--text); border-color: rgba(150, 190, 205, 0.34); }
+  .preset[aria-pressed="true"] {
+    color: #fff;
+    background: var(--accent-deep);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .preset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 4px 12px 14px; }
+  #panel-body::-webkit-scrollbar { width: 8px; }
+  #panel-body::-webkit-scrollbar-thumb { background: rgba(150, 190, 205, 0.2); border-radius: 4px; }
+
+  .group { padding-top: 10px; }
+  .group > h2 {
+    margin: 0 0 7px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--text-dim);
+  }
+  .row { margin-bottom: 7px; }
+  .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+  .row-head label { font-size: 11.5px; color: var(--text); }
+  .row-head output { font-family: var(--mono); font-size: 10.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    display: block; width: 100%; height: 18px; margin: 0;
+    background: transparent; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 3px; background: rgba(150, 190, 205, 0.22); border-radius: 2px; }
+  input[type="range"]::-moz-range-track { height: 3px; background: rgba(150, 190, 205, 0.22); border-radius: 2px; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 13px; height: 13px; margin-top: -5px;
+    background: var(--text); border: 0; border-radius: 50%;
+  }
+  input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; background: var(--text); border: 0; border-radius: 50%; }
+  input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .color-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .color-row label { font-size: 11.5px; }
+  input[type="color"] {
+    -webkit-appearance: none; appearance: none;
+    width: 46px; height: 26px; padding: 0;
+    background: none; border: 1px solid var(--line-strong, rgba(150, 190, 205, 0.28));
+    border-radius: var(--radius-ctl); cursor: pointer;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
+  input[type="color"]::-moz-color-swatch { border: 0; border-radius: 3px; }
+  input[type="color"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #readout {
+    margin-top: 10px; padding-top: 9px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 10px; line-height: 1.6; color: var(--text-dim);
+  }
+
+  #notice {
+    position: fixed; inset: 0; z-index: 20;
+    display: none; place-items: center;
+    padding: 24px;
+    background: rgba(5, 13, 19, 0.94);
+    text-align: center;
+  }
+  #notice.on { display: grid; }
+  #notice h2 { margin: 0 0 8px; font-size: 15px; }
+  #notice p { margin: 0; max-width: 42ch; font-size: 12.5px; line-height: 1.6; color: var(--text-dim); }
+  #notice code { font-family: var(--mono); color: var(--text); }
+
+  #panel-toggle { display: none; }
+
+  @media (max-width: 720px) {
+    #panel {
+      top: auto; right: 8px; left: 8px; bottom: 8px; width: auto;
+      max-height: 56dvh;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    #panel-head { padding: 10px 10px 8px; }
+    #panel-body { padding: 4px 10px 12px; }
+    #panel[data-collapsed="true"] #panel-body,
+    #panel[data-collapsed="true"] #presets { display: none; }
+    #panel[data-collapsed="true"] { max-height: none; }
+    #panel-toggle {
+      display: block; width: 100%; min-height: 40px; margin-top: 8px;
+      font: inherit; font-size: 11.5px; font-weight: 600; color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line); border-radius: var(--radius-ctl); cursor: pointer;
+    }
+    #panel-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<aside id="panel" aria-label="Panel kontrol simulasi air">
+  <div id="panel-head">
+    <svg class="brand" viewBox="0 0 195.0227 41.3595" role="img" aria-label="DeepSeek">
+      <path fill="currentColor" d="M55.6128,3.4712c-.5953-.2917-.8517.2642-1.1998.5466-.1191.0911-.2198.2095-.3206.3188-.8701.9292-1.8867,1.5398-3.2148,1.4668-1.9417-.1094-3.5995.5012-5.065,1.9863-.3114-1.8313-1.3463-2.9248-2.9217-3.6262-.8242-.3645-1.6577-.729-2.2348-1.5217-.403-.5647-.5129-1.1934-.7144-1.813-.1283-.3735-.2565-.7563-.687-.8201-.4671-.0728-.6503.3188-.8335.647-.7327,1.3394-1.0166,2.8154-.9892,4.3096.0641,3.3621,1.4838,6.0406,4.3047,7.9449.3206.2187.403.4372.3023.7563-.1924.656-.4214,1.2937-.6228,1.9497-.1283.4192-.3207.5103-.7694.3279-1.5479-.6467-2.8852-1.6035-4.0667-2.7605-2.0058-1.9407-3.8193-4.0818-6.0815-5.7583-.5312-.3918-1.0625-.7561-1.6121-1.1025-2.3081-2.2412.3023-4.0818.9068-4.3003.6319-.2278.2198-1.0115-1.8227-1.0022-2.0425.009-3.9109.6924-6.2922,1.6035-.348.1367-.7145.2368-1.09.3188-2.1615-.4099-4.4055-.5012-6.7502-.2368-4.4147.4919-7.9408,2.5784-10.5328,6.1409C.1914,13.1289-.5413,17.9941.3563,23.0691c.9434,5.3481,3.6727,9.7761,7.8676,13.2385,4.3506,3.5896,9.3606,5.3481,15.0758,5.011,3.4713-.2004,7.3364-.665,11.6961-4.355,1.099.5467,2.2531.7652,4.1674.9292,1.4746.1367,2.8943-.0728,3.9933-.3005,1.7219-.3645,1.6029-1.959.9801-2.2505-5.0466-2.3506-3.9385-1.394-4.9459-2.1685,2.5645-3.0339,6.4297-6.1865,7.9409-16.4001.119-.8108.0183-1.3211,0-1.9771-.0092-.4008.0824-.5556.5404-.6013,1.2639-.1458,2.4912-.4919,3.6178-1.1115,3.2698-1.7857,4.5886-4.7195,4.9-8.2364.0459-.5376-.0091-1.0935-.577-1.3757ZM27.119,35.123c-4.8909-3.8447-7.263-5.1113-8.2431-5.0566-.9159.0547-.751,1.1025-.5496,1.7859.2107.6741.4855,1.1389.8701,1.731.2656.3918.4489.9748-.2655,1.4123-1.5754.9749-4.314-.3281-4.4423-.3918-3.1872-1.877-5.8525-4.3553-7.7302-7.7444-1.8135-3.262-2.8667-6.7605-3.0408-10.4961-.0458-.9019.2198-1.221,1.1174-1.3848,1.1815-.2187,2.3997-.2644,3.5812-.0913,4.9918.729,9.2415,2.9612,12.8043,6.4963,2.0333,2.0135,3.572,4.419,5.1566,6.7696,1.6852,2.4963,3.4987,4.8745,5.8068,6.8242.8151.6833,1.4654,1.2026,2.0882,1.5854-1.8775.2095-5.01.2552-7.1532-1.4397ZM29.4637,20.0442c0-.4009.3206-.7197.7237-.7197.0916,0,.174.018.2473.0453.1008.0366.1924.0913.2656.1731.1283.1277.2015.3098.2015.5012,0,.4009-.3205.7197-.7234.7197s-.7145-.3188-.7145-.7197ZM36.7452,23.7798c-.4671.1914-.9342.3552-1.383.3735-.6961.0364-1.4563-.2461-1.8684-.5923-.6411-.5376-1.0991-.8381-1.2914-1.7766-.0825-.4009-.0367-1.0205.0367-1.3757.1648-.7654-.0184-1.2573-.5587-1.7039-.4397-.3645-.9984-.4646-1.6121-.4646-.229,0-.4395-.1003-.5953-.1823-.2565-.1275-.467-.4464-.2656-.8382.0641-.1274.3756-.4373.4489-.4919.8335-.4739,1.7952-.3189,2.6836.0364.8244.3371,1.4472.9567,2.3447,1.8313.9159,1.0568,1.0807,1.3486,1.6028,2.1411.4123.6196.7878,1.2573,1.0442,1.9863.1557.4556-.0458.8291-.5862,1.0569Z"/>
+      <path fill="currentColor" d="M119.4592,14.8275c-1.2957,0-2.602.2844-3.45,1.085-.0737.0685-.1422.1422-.2107.216h-.6215v-1.301h-3.4079v20.479h3.4079v-12.7256c0-1.3115.2844-2.6283,1.0745-3.4869.7901-.8638,2.0015-1.1693,3.2077-1.1693,1.2009,0,2.4177.3055,3.2077,1.1693.7901.8586,1.0745,2.1754,1.0745,3.4869,0,1.3063-.2844,2.6231-1.0745,3.4816-.7901.8638-2.0068,1.1693-3.2077,1.1693h-1.9383v3.0971h1.9383c2.0068,0,4.0242-.5109,5.341-1.9436s1.7856-3.6238,1.7856-5.8045-.4688-4.3771-1.7856-5.8097c-1.3168-1.4327-3.3342-1.9436-5.341-1.9436ZM71.8541,23.1181c0,1.3115-.2844,2.6283-1.0745,3.4869-.7901.8586-2.0015,1.1693-3.2077,1.1693s-2.4177-.3108-3.2077-1.1693c-.7901-.8586-1.0745-2.1754-1.0745-3.4869,0-1.3063.2844-2.6283,1.0745-3.4869.7901-.8586,2.0015-1.1641,3.2077-1.1641h1.9383v-3.0971h-1.9383c-2.0068,0-4.0242.5109-5.341,1.9436-1.3168,1.4327-1.7856,3.6238-1.7856,5.8045s.4688,4.3771,1.7856,5.8097c1.3168,1.4327,3.3342,1.9436,5.341,1.9436,1.2957,0,2.5967-.2897,3.45-1.085.0737-.0685.1422-.1422.2054-.216h.6268v1.301h3.4079V10.3873h-3.4079v12.7309ZM84.9589,14.8275c-2.0858,0-4.1822.532-5.5517,2.0121-1.3642,1.4801-1.8541,3.7503-1.8541,6.0099,0,2.2544.4899,4.5298,1.8541,6.0099,1.3695,1.4801,3.4658,2.0121,5.5517,2.0121s4.1822-.532,5.5517-2.0121c.7005-.7637,1.1746-1.7329,1.4696-2.8074h-3.371c-.0948.1422-.2002.2792-.316.4056-.8217.8902-2.0806,1.2062-3.3341,1.2062-1.2483,0-2.5072-.316-3.3289-1.2062-.8217-.8902-1.1167-2.2544-1.1167-3.608s.295-2.7179,1.1167-3.608c.8217-.8902,2.0806-1.2062,3.3289-1.2062,1.2536,0,2.5125.316,3.3341,1.2062.5689.6163.8849,1.4538,1.0271,2.365h-6.0257v2.4861h9.0754v-1.2431c0-2.2596-.4899-4.5298-1.8593-6.0099-1.3642-1.4801-3.4658-2.0121-5.5517-2.0121ZM102.0668,14.8275c-2.0806,0-4.1822.532-5.5464,2.0121-1.3695,1.4801-1.8593,3.7503-1.8593,6.0099,0,2.2544.4899,4.5298,1.8593,6.0099,1.3642,1.4801,3.4658,2.0121,5.5464,2.0121,2.0858,0,4.1822-.532,5.5517-2.0121.7058-.7637,1.1746-1.7329,1.4696-2.8074h-3.371c-.0948.1422-.2002.2792-.316.4056-.8217.8902-2.0806,1.2062-3.3289,1.2062-1.2536,0-2.5125-.316-3.3342-1.2062-.8217-.8902-1.1166-2.2544-1.1166-3.608s.295-2.7179,1.1166-3.608c.8217-.8902,2.0806-1.2062,3.3342-1.2062,1.2483,0,2.5072.316,3.3289,1.2062.5689.6163.8849,1.4538,1.0271,2.365h-6.0257v2.4861h9.0754v-1.2431c0-2.2596-.4898-4.5298-1.8593-6.0099-1.3642-1.4801-3.4658-2.0121-5.5517-2.0121ZM141.8344,22.5861c-1.3642-.8744-3.4658-1.1851-5.5464-1.1851h.0737c-.8902,0-1.7856-.1211-2.3702-.4635-.5847-.3371-.7901-.8586-.7901-1.3747s.2054-1.0376.7901-1.3747c.5847-.3424,1.4801-.4635,2.3702-.4635s1.7856.1264,2.365.4635c.5847.3371.7954.8586.7954,1.3747h3.4711c0-1.3326-.4477-2.6705-1.6855-3.5448-1.2378-.8744-3.134-1.1904-5.0197-1.1904s-3.7819.316-5.0197,1.1904c-1.2378.8744-1.6802,2.2122-1.6802,3.5448s.4424,2.6757,1.6802,3.5448c1.2378.8744,3.134,1.1904,5.0197,1.1904.9797,0,2.0542.1211,2.6968.4582.6479.3424.8796.8638.8796,1.38s-.2318,1.0376-.8796,1.3747c-.6426.3371-1.6328.4582-2.6178.4582-.9797,0-1.9699-.1211-2.6178-.4582-.6426-.3424-.8744-.8586-.8744-1.3747h-3.9978c0,1.3273.4899,2.6705,1.8593,3.5448,1.3695.8744,3.4658,1.1851,5.5517,1.1851,2.0806,0,4.1822-.3108,5.5464-1.1851,1.3695-.8744,1.8593-2.2175,1.8593-3.5448,0-1.3326-.4899-2.6757-1.8593-3.5501ZM153.3959,14.8275c-2.0858,0-4.1822.532-5.5517,2.0121-1.3642,1.4801-1.8593,3.7503-1.8593,6.0099,0,2.2544.4951,4.5298,1.8593,6.0099,1.3695,1.4801,3.4658,2.0121,5.5517,2.0121s4.1822-.532,5.5516-2.0121c.7005-.7637,1.1746-1.7329,1.4643-2.8074h-3.3658c-.0948.1422-.2001.2792-.316.4056-.8217.8902-2.0806,1.2062-3.3342,1.2062-1.2483,0-2.5125-.316-3.3289-1.2062-.8217-.8902-1.1166-2.2544-1.1166-3.608s.295-2.7179,1.1166-3.608c.8164-.8902,2.0806-1.2062,3.3289-1.2062,1.2536,0,2.5125.316,3.3342,1.2062.5689.6163.8849,1.4538,1.0271,2.365h-6.031v2.4861h9.0807v-1.2431c0-2.2596-.4898-4.5298-1.8593-6.0099-1.3695-1.4801-3.4658-2.0121-5.5516-2.0121ZM170.5038,14.8275c-2.0858,0-4.1822.532-5.5516,2.0121-1.3642,1.4801-1.8593,3.7503-1.8593,6.0099,0,2.2544.4951,4.5298,1.8593,6.0099,1.3695,1.4801,3.4658,2.0121,5.5516,2.0121s4.1822-.532,5.5517-2.0121c.7005-.7637,1.1746-1.7329,1.4696-2.8074h-3.371c-.0948.1422-.2002.2792-.316.4056-.8217.8902-2.0806,1.2062-3.3342,1.2062-1.2483,0-2.5125-.316-3.3289-1.2062-.8217-.8902-1.1167-2.2544-1.1167-3.608s.295-2.7179,1.1167-3.608c.8164-.8902,2.0806-1.2062,3.3289-1.2062,1.2536,0,2.5125.316,3.3342,1.2062.5689.6163.8849,1.4538,1.0271,2.365h-6.0257v2.4861h9.0754v-1.2431c0-2.2596-.4899-4.5298-1.8593-6.0099-1.3695-1.4801-3.4658-2.0121-5.5517-2.0121ZM180.2008,9.6709h3.4079v21.2006h-3.4079V9.6709ZM190.7984,15.5386l-5.5938,6.8316,5.5938,8.5013h4.2243l-5.5938-8.5013,5.5938-6.8316h-4.2243Z"/>
+    </svg>
+    <h1>Simulasi Air</h1>
+    <p class="model">deepseek-4.1-flash</p>
+    <p class="sub">Tiga lapis Gerstner, dua normal map prosedural, refraksi ruang layar, buih tepi berbasis kedalaman.</p>
+    <div id="presets" role="group" aria-label="Preset">
+      <button type="button" class="preset" data-preset="tropis" aria-pressed="true">Laut<br>tropis</button>
+      <button type="button" class="preset" data-preset="danau" aria-pressed="false">Danau<br>tenang</button>
+      <button type="button" class="preset" data-preset="sungai" aria-pressed="false">Sungai<br>berarus</button>
+    </div>
+    <button type="button" id="panel-toggle" aria-expanded="false" aria-controls="panel-body">Tampilkan kontrol</button>
+  </div>
+  <div id="panel-body">
+    <div id="readout"></div>
+  </div>
+</aside>
+
+<div id="notice" role="alert">
+  <div>
+    <h2>WebGL2 tidak tersedia</h2>
+    <p>Simulasi ini butuh WebGL2. Coba buka di Chrome, Firefox, atau Safari versi terbaru, dan pastikan akselerasi perangkat keras aktif.</p>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// --- Util -------------------------------------------------------------------
+
+function deepMerge(target, patch) {
+  for (const key of Object.keys(patch)) {
+    const value = patch[key];
+    if (value && typeof value === 'object' && !Array.isArray(value) && target[key] && typeof target[key] === 'object') {
+      deepMerge(target[key], value);
+    } else {
+      target[key] = value;
+    }
+  }
+  return target;
+}
+
+// --- Parameter --------------------------------------------------------------
+// Satu sumber kebenaran: uniforms shader membaca field ini, panel menulis ke sini.
+
+const P = {
+  color: {
+    shallow: '#3fd6c0',
+    deep: '#062b45',
+    depthScale: 1.6,
+    opacity: 0.82,
+  },
+  waves: {
+    amplitude: 0.42,
+    frequency: 1.05,
+    speed: 0.75,
+    steepness: 0.62,
+    meshSize: 220,
+    meshSegments: 288,
+    baseDepth: 5.0,
+  },
+  normal: {
+    scale: 3.4,
+    strength: 0.85,
+    scrollSpeed: 0.055,
+    crossAngle: 0.9,
+  },
+  fresnel: {
+    intensity: 0.9,
+    power: 4.0,
+    tint: '#9fd9ff',
+  },
+  foam: {
+    threshold: 0.34,
+    softness: 0.24,
+    intensity: 1.0,
+    noiseScale: 5.5,
+    scrollSpeed: 0.09,
+  },
+  sun: {
+    azimuth: 42,
+    elevation: 26,
+    color: '#fff2d4',
+    intensity: 1.25,
+    sharpness: 190,
+    sparkle: 0.85,
+  },
+  refraction: {
+    strength: 0.55,
+    depthFalloff: 0.5,
+  },
+  sky: {
+    zenith: '#0a4a86',
+    horizon: '#a9d4e6',
+  },
+  view: {
+    envMode: 0,
+    paused: false,
+    autoRotate: false,
+  },
+};
+
+const SEG_MIN = 64;
+const SEG_MAX = 448;
+
+const PRESETS = {
+  tropis: {
+    color: { shallow: '#3fd6c0', deep: '#062b45', depthScale: 1.6, opacity: 0.82 },
+    waves: { amplitude: 0.42, frequency: 1.05, speed: 0.75, steepness: 0.62, meshSize: 220, baseDepth: 5.0 },
+    normal: { scale: 3.4, strength: 0.85, scrollSpeed: 0.055, crossAngle: 0.9 },
+    fresnel: { intensity: 0.9, power: 4.0, tint: '#9fd9ff' },
+    foam: { threshold: 0.34, softness: 0.24, intensity: 1.0, noiseScale: 5.5, scrollSpeed: 0.09 },
+    sun: { azimuth: 42, elevation: 26, color: '#fff2d4', intensity: 1.25, sharpness: 190, sparkle: 0.85 },
+    refraction: { strength: 0.55, depthFalloff: 0.5 },
+    sky: { zenith: '#0a4a86', horizon: '#a9d4e6' },
+    view: { envMode: 0 },
+  },
+  danau: {
+    color: { shallow: '#6fb9a8', deep: '#0d2b30', depthScale: 2.3, opacity: 0.93 },
+    waves: { amplitude: 0.07, frequency: 1.5, speed: 0.22, steepness: 0.25, meshSize: 200, baseDepth: 6.5 },
+    normal: { scale: 6.2, strength: 0.32, scrollSpeed: 0.014, crossAngle: 0.35 },
+    fresnel: { intensity: 1.0, power: 5.5, tint: '#c8e6f2' },
+    foam: { threshold: 0.52, softness: 0.12, intensity: 0.25, noiseScale: 8.0, scrollSpeed: 0.03 },
+    sun: { azimuth: 118, elevation: 48, color: '#fff6e2', intensity: 1.0, sharpness: 260, sparkle: 0.35 },
+    refraction: { strength: 0.32, depthFalloff: 0.8 },
+    sky: { zenith: '#14405f', horizon: '#cfe4ea' },
+    view: { envMode: 0 },
+  },
+  sungai: {
+    color: { shallow: '#8fc17a', deep: '#173026', depthScale: 1.05, opacity: 0.88 },
+    waves: { amplitude: 0.3, frequency: 1.9, speed: 1.75, steepness: 0.45, meshSize: 190, baseDepth: 3.2 },
+    normal: { scale: 2.1, strength: 1.05, scrollSpeed: 0.17, crossAngle: 0.12 },
+    fresnel: { intensity: 0.72, power: 3.4, tint: '#cde8ff' },
+    foam: { threshold: 0.4, softness: 0.3, intensity: 0.75, noiseScale: 4.0, scrollSpeed: 0.24 },
+    sun: { azimuth: 78, elevation: 33, color: '#ffeec6', intensity: 1.15, sharpness: 150, sparkle: 0.6 },
+    refraction: { strength: 0.42, depthFalloff: 0.35 },
+    sky: { zenith: '#1d5a52', horizon: '#bcd9c6' },
+    view: { envMode: 0 },
+  },
+};
+
+// --- GLSL -------------------------------------------------------------------
+
+const NOISE_GLSL = /* glsl */ `
+// Hash tanpa tekstur: tiga sinusoidal frekuensi berbeda dijumlahkan, cukup acak untuk normal map.
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+vec2 hash22(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+float valueNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = hash12(i);
+  float b = hash12(i + vec2(1.0, 0.0));
+  float c = hash12(i + vec2(0.0, 1.0));
+  float d = hash12(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+  float sum = 0.0;
+  float amp = 0.5;
+  mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+  for (int i = 0; i < 5; i++) {
+    sum += amp * valueNoise(p);
+    p = rot * p * 2.02;
+    amp *= 0.5;
+  }
+  return sum;
+}
+
+// Beda hingga pada fbm: dipakai untuk menurunkan normal map dari ketinggian prosedural.
+vec2 fbmGradient(vec2 p, float eps) {
+  float h = fbm(p);
+  float hx = fbm(p + vec2(eps, 0.0));
+  float hy = fbm(p + vec2(0.0, eps));
+  return vec2(hx - h, hy - h) / eps;
+}
+`;
+
+const WAVE_GLSL = /* glsl */ `
+// Satu lapis gelombang Gerstner: menggeser XY dan mengangkat Y, dengan puncak lebih tajam dari lembah.
+void gerstner(vec2 pos, vec2 dir, float steepness, float wavelength, float speed, float time, inout vec3 offset) {
+  float k = 6.28318530718 / max(wavelength, 0.0001);
+  float a = steepness / k;
+  vec2 d = normalize(dir);
+  float phase = k * dot(d, pos) - speed * k * time;
+  float s = sin(phase);
+  float c = cos(phase);
+  offset.x += d.x * a * c;
+  offset.z += d.y * a * c;
+  offset.y += a * s;
+}
+
+// Tiga lapis gelombang berbeda arah dan skala, dijumlahkan pada satu titik.
+vec3 gerstnerSum(vec2 pos, float time, float amp, float freq, float speed, float steepness) {
+  vec3 offset = vec3(0.0);
+  float base = max(freq, 0.0001);
+  gerstner(pos, vec2(1.0, 0.22), steepness, 1.0 / base * 7.4, speed, time, offset);
+  gerstner(pos, vec2(-0.65, 0.76), steepness * 0.72, 1.0 / base * 4.1, speed * 1.35, time, offset);
+  gerstner(pos, vec2(0.18, -0.98), steepness * 0.5, 1.0 / base * 2.3, speed * 1.9, time, offset);
+  return offset * amp;
+}
+`;
+
+const WATER_VERTEX = /* glsl */ `
+precision highp float;
+
+uniform float uTime;
+uniform float uAmplitude;
+uniform float uFrequency;
+uniform float uSpeed;
+uniform float uSteepness;
+
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
+varying float vCrest;
+
+${NOISE_GLSL}
+${WAVE_GLSL}
+
+void main() {
+  vec4 worldOrigin = modelMatrix * vec4(position, 1.0);
+  vec2 basePos = worldOrigin.xz;
+
+  vec3 offset = gerstnerSum(basePos, uTime, uAmplitude, uFrequency, uSpeed, uSteepness);
+  vec3 displaced = worldOrigin.xyz + offset;
+
+  // Normal analitik: beda hingga arah X dan Z dari posisi terdisplacement.
+  float eps = 0.35;
+  vec3 px = vec3(basePos.x + eps, 0.0, basePos.y) + gerstnerSum(basePos + vec2(eps, 0.0), uTime, uAmplitude, uFrequency, uSpeed, uSteepness);
+  vec3 pz = vec3(basePos.x, 0.0, basePos.y + eps) + gerstnerSum(basePos + vec2(0.0, eps), uTime, uAmplitude, uFrequency, uSpeed, uSteepness);
+  vec3 tangentX = px - displaced;
+  vec3 tangentZ = pz - displaced;
+  vec3 normal = normalize(cross(tangentZ, tangentX));
+
+  // Keruncingan puncak: dipakai untuk mempertajam buih dan kilau matahari.
+  vCrest = smoothstep(0.35, 1.0, offset.y / max(uAmplitude * 1.15, 0.0001));
+
+  vWorldPos = displaced;
+  vWorldNormal = normal;
+
+  gl_Position = projectionMatrix * viewMatrix * vec4(displaced, 1.0);
+}
+`;
+
+const WATER_FRAGMENT = /* glsl */ `
+precision highp float;
+
+uniform float uTime;
+uniform vec3 uShallowColor;
+uniform vec3 uDeepColor;
+uniform vec3 uTintColor;
+uniform vec3 uSunColor;
+uniform vec3 uSunDirection;
+uniform vec3 uCameraPosition;
+uniform vec2 uResolution;
+uniform float uAmplitude;
+uniform float uDepthScale;
+uniform float uOpacity;
+uniform float uNormalScale;
+uniform float uNormalStrength;
+uniform float uNormalScroll;
+uniform float uCrossAngle;
+uniform float uFresnelIntensity;
+uniform float uFresnelPower;
+uniform float uFoamThreshold;
+uniform float uFoamSoftness;
+uniform float uFoamIntensity;
+uniform float uFoamNoiseScale;
+uniform float uFoamScroll;
+uniform float uSunIntensity;
+uniform float uSunSharpness;
+uniform float uSparkle;
+uniform float uRefractionStrength;
+uniform float uRefractionFalloff;
+uniform float uBaseDepth;
+uniform sampler2D uScreenTexture;
+uniform int uEnvMode;
+uniform vec3 uSkyZenith;
+uniform vec3 uSkyHorizon;
+
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
+varying float vCrest;
+
+${NOISE_GLSL}
+
+// Detail permukaan: dua lapis fbm bergerak berlawanan, digabung jadi vektor tangen.
+// eps harus jauh lebih kecil dari satu sel noise, kalau tidak gradiennya jadi bintik acak.
+vec3 detailNormal(vec2 p, float fade) {
+  vec2 a = p * uNormalScale + vec2(uTime * uNormalScroll, uTime * uNormalScroll * 0.6);
+  vec2 b = p * uNormalScale * 1.37 + vec2(-uTime * uNormalScroll * 0.8, uTime * uNormalScroll * 1.1);
+  b = mat2(cos(uCrossAngle), -sin(uCrossAngle), sin(uCrossAngle), cos(uCrossAngle)) * b;
+
+  vec2 gradA = fbmGradient(a, 0.06);
+  vec2 gradB = fbmGradient(b, 0.05);
+  vec2 grad = (gradA * 0.62 + gradB * 0.52) * uNormalStrength * 2.0 * fade;
+  return normalize(vec3(-grad.x, 1.0, -grad.y));
+}
+
+vec3 proceduralSky(vec3 dir) {
+  float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
+  vec3 sky = mix(uSkyHorizon, uSkyZenith, smoothstep(0.0, 0.85, h));
+  float sun = pow(max(dot(dir, uSunDirection), 0.0), 900.0);
+  return sky + uSunColor * sun * 2.5;
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / uResolution;
+
+  // Kedalaman: tinggi air di atas dasar, dinormalkan ke kedalaman dasar supaya
+  // slider tetap terasa sama saat kedalaman dasar diubah.
+  float depth = uBaseDepth - vWorldPos.y;
+  float depthNorm = clamp(depth / max(uBaseDepth, 0.001), 0.0, 1.0);
+  float depthT = 1.0 - exp(-depthNorm * uDepthScale * 3.0);
+
+  vec3 N = normalize(vWorldNormal);
+  vec3 V = normalize(uCameraPosition - vWorldPos);
+  float viewDist = length(uCameraPosition - vWorldPos);
+
+  // Detail mikro memudar dengan jarak: tanpa ini permukaan jauh berubah jadi bintik acak.
+  float detailFade = 1.0 - smoothstep(12.0, 95.0, viewDist);
+  vec3 detail = detailNormal(vWorldPos.xz, detailFade);
+  N = normalize(N + vec3(detail.x, 0.0, detail.z) * 0.6);
+
+  // Buih: puncak gelombang dihaluskan dulu, baru digerbangi ambang. Tanpa
+  // penghalusan ini vCrest yang tajam berubah jadi bercak putih raksasa.
+  float crest = smoothstep(0.55, 1.0, vCrest);
+  vec2 foamCoord = vWorldPos.xz * uFoamNoiseScale + vec2(uTime * uFoamScroll, uTime * uFoamScroll * 0.4);
+  float foamNoise = fbm(foamCoord);
+  float foamField = crest * (0.55 + foamNoise * 0.6);
+  float foam = smoothstep(uFoamThreshold, uFoamThreshold + max(uFoamSoftness, 0.001), foamField);
+  foam *= uFoamIntensity * smoothstep(0.05, 0.9, depth);
+
+  // Refraksi: distorsi UV layar berdasarkan kedalaman dan kemiringan permukaan.
+  vec2 refractOffset = vec2(N.x, N.z) * uRefractionStrength * 0.06;
+  refractOffset *= exp(-max(depth, 0.0) * uRefractionFalloff);
+  vec2 refractUv = clamp(uv + refractOffset, vec2(0.002), vec2(0.998));
+  vec3 behind = texture2D(uScreenTexture, refractUv).rgb;
+
+  // Fresnel: rasio pantulan naik saat sudut pandang makin landai.
+  float fresnel = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), uFresnelPower);
+  fresnel = clamp(fresnel * uFresnelIntensity, 0.0, 1.0);
+
+  // Warna air: kedalaman dicampur warna dasar, lalu diwarnai pantulan langit.
+  // Puncak gelombang memakai air lebih tipis, jadi ikut menarik warna dangkal.
+  float heightT = clamp((vWorldPos.y + uAmplitude) / max(uAmplitude * 2.0, 0.0001), 0.0, 1.0);
+  float shallowMix = mix(depthT, heightT, 0.42);
+  vec3 waterTint = mix(uShallowColor, uDeepColor, shallowMix);
+  vec3 reflected = uEnvMode == 0
+    ? mix(uTintColor, proceduralSky(reflect(-V, N)), 0.7)
+    : vec3(0.05, 0.07, 0.09);
+  vec3 body = mix(waterTint, reflected, fresnel);
+
+  // Kilau matahari: dua lobus, satu lebar untuk gelombang besar, satu tajam untuk sparkle.
+  vec3 H = normalize(uSunDirection + V);
+  float nh = max(dot(N, H), 0.0);
+  float specBroad = pow(nh, max(uSunSharpness * 0.1, 1.0));
+  float specSharp = pow(nh, max(uSunSharpness, 1.0));
+  float sparkleNoise = fbm(vWorldPos.xz * 9.0 + uTime * 1.1);
+  float sparkleMask = mix(1.0, smoothstep(0.5, 0.92, sparkleNoise), uSparkle);
+  vec3 specular = uSunColor * uSunIntensity * (specBroad * 0.2 + specSharp * 1.6 * sparkleMask);
+  specular *= smoothstep(0.0, 0.35, uSunDirection.y);
+  // Spekular dipadamkan dengan jarak: highlight jauh berubah jadi titik yang berkedip.
+  specular *= 1.0 - smoothstep(20.0, 130.0, viewDist);
+
+  vec3 color = mix(behind, body, uOpacity);
+  color += specular * mix(0.35, 1.0, fresnel);
+  color = mix(color, vec3(0.94, 0.97, 0.99), clamp(foam, 0.0, 1.0) * 0.92);
+
+  // Kabut jarak: air jauh melebur ke langit, jadi cakrawala tidak berhenti di
+  // garis lurus yang membocorkan bentuk bidang.
+  float haze = smoothstep(60.0, 240.0, viewDist);
+  color = mix(color, uSkyHorizon, haze * 0.85);
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+const UNDERWATER_VERTEX = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const UNDERWATER_FRAGMENT = /* glsl */ `
+precision highp float;
+uniform float uTime;
+uniform vec3 uShallowColor;
+uniform vec3 uDeepColor;
+uniform float uWaveAmp;
+varying vec2 vUv;
+
+// Grid dasar laut. Lebar garis tetap di ruang UV, lalu dilunturkan oleh jarak
+// supaya tidak berkedip saat kamera bergerak.
+float gridLines(vec2 uv, float cells, float width, float fade) {
+  vec2 cell = uv * cells;
+  vec2 d = abs(fract(cell - 0.5) - 0.5);
+  float line = min(d.x, d.y);
+  return (1.0 - smoothstep(0.0, width, line)) * fade;
+}
+
+void main() {
+  vec2 centered = (vUv - 0.5) * 2.0;
+  float r = length(centered);
+
+  // Gradasi radial: pasir terang di pusat, makin gelap ke luar.
+  vec3 sand = mix(vec3(0.36, 0.31, 0.24), vec3(0.1, 0.12, 0.13), smoothstep(0.0, 1.0, r));
+  vec3 base = mix(sand, uDeepColor, 0.35);
+
+  // Dua lapis grid beda skala: yang halus jadi detail, yang kasar jadi penanda jarak.
+  float fade = 1.0 - smoothstep(0.35, 0.9, r);
+  float fine = gridLines(vUv, 46.0, 0.055, fade) * 0.18;
+  float coarse = gridLines(vUv, 9.0, 0.012, fade) * 0.34;
+  base += vec3(0.16, 0.26, 0.3) * (fine + coarse);
+
+  // Caustic bergerak, menguat saat gelombang besar.
+  float caustic = sin(vUv.x * 34.0 + uTime * 0.7) * sin(vUv.y * 27.0 - uTime * 0.5);
+  caustic = pow(max(caustic * 0.5 + 0.5, 0.0), 3.0) * 0.3;
+  base += vec3(0.3, 0.5, 0.55) * caustic * clamp(uWaveAmp * 2.0, 0.0, 1.0);
+
+  gl_FragColor = vec4(base, 1.0);
+}
+`;
+
+// --- Renderer & scene -------------------------------------------------------
+
+const app = document.getElementById('app');
+const notice = document.getElementById('notice');
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+} catch (err) {
+  notice.classList.add('on');
+  throw err;
+}
+if (!renderer.capabilities.isWebGL2) {
+  notice.classList.add('on');
+  throw new Error('WebGL2 tidak tersedia');
+}
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+app.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(0, 7.5, 26);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 4;
+controls.maxDistance = 150;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.target.set(0, 0, 0);
+
+// --- Render target ----------------------------------------------------------
+// Refraksi butuh scene bawah air sebagai tekstur. Air dirender ke layar sambil
+// membaca target ini lewat koordinat layar yang digeser.
+
+const renderTarget = new THREE.WebGLRenderTarget(1, 1, {
+  minFilter: THREE.LinearFilter,
+  magFilter: THREE.LinearFilter,
+  type: THREE.HalfFloatType,
+  depthBuffer: true,
+});
+
+// --- Uniforms ---------------------------------------------------------------
+
+const uniforms = {
+  uTime: { value: 0 },
+  uShallowColor: { value: new THREE.Color(P.color.shallow) },
+  uDeepColor: { value: new THREE.Color(P.color.deep) },
+  uTintColor: { value: new THREE.Color(P.fresnel.tint) },
+  uSunColor: { value: new THREE.Color(P.sun.color) },
+  uSunDirection: { value: new THREE.Vector3(0.4, 0.5, 0.7) },
+  uCameraPosition: { value: new THREE.Vector3() },
+  uResolution: { value: new THREE.Vector2(1, 1) },
+  uDepthScale: { value: P.color.depthScale },
+  uOpacity: { value: P.color.opacity },
+  uAmplitude: { value: P.waves.amplitude },
+  uFrequency: { value: P.waves.frequency },
+  uSpeed: { value: P.waves.speed },
+  uSteepness: { value: P.waves.steepness },
+  uNormalScale: { value: P.normal.scale },
+  uNormalStrength: { value: P.normal.strength },
+  uNormalScroll: { value: P.normal.scrollSpeed },
+  uCrossAngle: { value: P.normal.crossAngle },
+  uFresnelIntensity: { value: P.fresnel.intensity },
+  uFresnelPower: { value: P.fresnel.power },
+  uFoamThreshold: { value: P.foam.threshold },
+  uFoamSoftness: { value: P.foam.softness },
+  uFoamIntensity: { value: P.foam.intensity },
+  uFoamNoiseScale: { value: P.foam.noiseScale },
+  uFoamScroll: { value: P.foam.scrollSpeed },
+  uSunIntensity: { value: P.sun.intensity },
+  uSunSharpness: { value: P.sun.sharpness },
+  uSparkle: { value: P.sun.sparkle },
+  uRefractionStrength: { value: P.refraction.strength },
+  uRefractionFalloff: { value: P.refraction.depthFalloff },
+  uBaseDepth: { value: P.waves.baseDepth },
+  uScreenTexture: { value: renderTarget.texture },
+  uEnvMode: { value: P.view.envMode },
+  uSkyZenith: { value: new THREE.Color(P.sky.zenith) },
+  uSkyHorizon: { value: new THREE.Color(P.sky.horizon) },
+};
+
+// --- Langit -----------------------------------------------------------------
+// Bola langit prosedural: memberi latar yang pantas dipantulkan air, dan
+// menyembunyikan batas bidang air di cakrawala.
+
+const skyMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uZenith: uniforms.uSkyZenith,
+    uHorizon: uniforms.uSkyHorizon,
+    uSunColor: uniforms.uSunColor,
+    uSunDirection: uniforms.uSunDirection,
+  },
+  vertexShader: `
+    varying vec3 vDir;
+    void main() {
+      vDir = normalize(position);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision highp float;
+    uniform vec3 uZenith;
+    uniform vec3 uHorizon;
+    uniform vec3 uSunColor;
+    uniform vec3 uSunDirection;
+    varying vec3 vDir;
+    void main() {
+      vec3 dir = normalize(vDir);
+      float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
+      vec3 sky = mix(uHorizon, uZenith, smoothstep(0.5, 0.95, h));
+      float disc = pow(max(dot(dir, uSunDirection), 0.0), 1400.0);
+      float glow = pow(max(dot(dir, uSunDirection), 0.0), 24.0) * 0.22;
+      sky += uSunColor * (disc * 3.0 + glow);
+      gl_FragColor = vec4(sky, 1.0);
+    }
+  `,
+  side: THREE.BackSide,
+  depthWrite: false,
+});
+
+const sky = new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), skyMaterial);
+sky.renderOrder = -1;
+scene.add(sky);
+
+// --- Material air -----------------------------------------------------------
+
+const waterMaterial = new THREE.ShaderMaterial({
+  uniforms,
+  vertexShader: WATER_VERTEX,
+  fragmentShader: WATER_FRAGMENT,
+  side: THREE.DoubleSide,
+});
+
+const water = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 1, 1), waterMaterial);
+water.rotation.x = -Math.PI / 2;
+water.renderOrder = 2;
+scene.add(water);
+
+function rebuildWaterMesh() {
+  water.geometry.dispose();
+  water.geometry = new THREE.PlaneGeometry(P.waves.meshSize, P.waves.meshSize, P.waves.meshSegments, P.waves.meshSegments);
+}
+rebuildWaterMesh();
+
+// --- Dasar laut -------------------------------------------------------------
+// Objek di bawah permukaan inilah yang bengkok saat refraksi aktif.
+
+const seabedMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: uniforms.uTime,
+    uShallowColor: uniforms.uShallowColor,
+    uDeepColor: uniforms.uDeepColor,
+    uWaveAmp: uniforms.uAmplitude,
+  },
+  vertexShader: UNDERWATER_VERTEX,
+  fragmentShader: UNDERWATER_FRAGMENT,
+});
+
+const seabed = new THREE.Mesh(new THREE.PlaneGeometry(600, 600, 1, 1), seabedMaterial);
+seabed.rotation.x = -Math.PI / 2;
+seabed.renderOrder = 0;
+scene.add(seabed);
+
+const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3a42, roughness: 0.95, metalness: 0.0 });
+const rockGeometry = new THREE.IcosahedronGeometry(1, 1);
+const rocks = new THREE.Group();
+scene.add(rocks);
+
+// Sebaran batu deterministik: pola yang sama tiap kali halaman dimuat.
+let seed = 20261013;
+function rand() {
+  seed = (seed * 1664525 + 1013904223) % 4294967296;
+  return seed / 4294967296;
+}
+
+for (let i = 0; i < 22; i++) {
+  const angle = rand() * Math.PI * 2;
+  const radius = 3 + rand() * 30;
+  const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+  const scale = 0.5 + rand() * 2.2;
+  rock.scale.set(scale, scale * (0.5 + rand() * 0.7), scale);
+  rock.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+  rock.rotation.set(rand() * Math.PI, rand() * Math.PI, rand() * Math.PI);
+  rocks.add(rock);
+}
+
+const seabedLight = new THREE.DirectionalLight(0xd8f0ff, 2.4);
+seabedLight.position.set(6, 20, 8);
+scene.add(seabedLight);
+scene.add(new THREE.AmbientLight(0x4a7288, 1.6));
+
+// --- Sinkronisasi parameter ke uniform --------------------------------------
+
+function applyWaves() {
+  uniforms.uAmplitude.value = P.waves.amplitude;
+  uniforms.uFrequency.value = P.waves.frequency;
+  uniforms.uSpeed.value = P.waves.speed;
+  uniforms.uSteepness.value = P.waves.steepness;
+  uniforms.uBaseDepth.value = P.waves.baseDepth;
+  seabed.position.y = -P.waves.baseDepth;
+  for (const rock of rocks.children) rock.position.y = -P.waves.baseDepth + rock.scale.y * 0.35;
+}
+
+function applySun() {
+  const az = THREE.MathUtils.degToRad(P.sun.azimuth);
+  const el = THREE.MathUtils.degToRad(P.sun.elevation);
+  uniforms.uSunDirection.value
+    .set(Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az))
+    .normalize();
+  uniforms.uSunColor.value.set(P.sun.color);
+  uniforms.uSunIntensity.value = P.sun.intensity;
+  uniforms.uSunSharpness.value = P.sun.sharpness;
+  uniforms.uSparkle.value = P.sun.sparkle;
+}
+
+function applyAll() {
+  uniforms.uShallowColor.value.set(P.color.shallow);
+  uniforms.uDeepColor.value.set(P.color.deep);
+  uniforms.uDepthScale.value = P.color.depthScale;
+  uniforms.uOpacity.value = P.color.opacity;
+
+  uniforms.uNormalScale.value = P.normal.scale;
+  uniforms.uNormalStrength.value = P.normal.strength;
+  uniforms.uNormalScroll.value = P.normal.scrollSpeed;
+  uniforms.uCrossAngle.value = P.normal.crossAngle;
+
+  uniforms.uFresnelIntensity.value = P.fresnel.intensity;
+  uniforms.uFresnelPower.value = P.fresnel.power;
+  uniforms.uTintColor.value.set(P.fresnel.tint);
+
+  uniforms.uFoamThreshold.value = P.foam.threshold;
+  uniforms.uFoamSoftness.value = P.foam.softness;
+  uniforms.uFoamIntensity.value = P.foam.intensity;
+  uniforms.uFoamNoiseScale.value = P.foam.noiseScale;
+  uniforms.uFoamScroll.value = P.foam.scrollSpeed;
+
+  uniforms.uRefractionStrength.value = P.refraction.strength;
+  uniforms.uRefractionFalloff.value = P.refraction.depthFalloff;
+  uniforms.uEnvMode.value = P.view.envMode;
+  uniforms.uSkyZenith.value.set(P.sky.zenith);
+  uniforms.uSkyHorizon.value.set(P.sky.horizon);
+
+  applyWaves();
+  applySun();
+}
+
+// --- Resolusi & resize ------------------------------------------------------
+
+function resize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+
+  const dpr = renderer.getPixelRatio();
+  renderTarget.setSize(Math.max(1, Math.floor(w * dpr)), Math.max(1, Math.floor(h * dpr)));
+  uniforms.uResolution.value.set(w * dpr, h * dpr);
+}
+window.addEventListener('resize', resize);
+
+// --- Panel kontrol ----------------------------------------------------------
+
+const body = document.getElementById('panel-body');
+const readout = document.getElementById('readout');
+const syncedControls = [];
+
+function readPath(path) {
+  return path.split('.').reduce((obj, key) => obj[key], P);
+}
+
+function writePath(path, value) {
+  const parts = path.split('.');
+  const last = parts.pop();
+  parts.reduce((obj, key) => obj[key], P)[last] = value;
+}
+
+function addGroup(title) {
+  const group = document.createElement('section');
+  group.className = 'group';
+  const heading = document.createElement('h2');
+  heading.textContent = title;
+  group.appendChild(heading);
+  body.insertBefore(group, readout);
+  return group;
+}
+
+function addSlider(group, spec) {
+  const row = document.createElement('div');
+  row.className = 'row';
+
+  const head = document.createElement('div');
+  head.className = 'row-head';
+  const label = document.createElement('label');
+  label.textContent = spec.label;
+  const output = document.createElement('output');
+  head.append(label, output);
+
+  const input = document.createElement('input');
+  input.type = 'range';
+  input.min = spec.min;
+  input.max = spec.max;
+  input.step = spec.step;
+  input.value = readPath(spec.path);
+  input.id = 'ctl-' + spec.path.replace(/\./g, '-');
+  label.htmlFor = input.id;
+
+  const format = spec.format || ((v) => v.toFixed(2));
+  const sync = () => {
+    const value = readPath(spec.path);
+    input.value = value;
+    output.textContent = format(Number(value));
+  };
+  sync();
+
+  input.addEventListener('input', () => {
+    writePath(spec.path, Number(input.value));
+    sync();
+    applyAll();
+    if (spec.onInput) spec.onInput(Number(input.value));
+  });
+
+  row.append(head, input);
+  group.appendChild(row);
+  syncedControls.push(sync);
+}
+
+function addColor(group, spec) {
+  const row = document.createElement('div');
+  row.className = 'row color-row';
+
+  const label = document.createElement('label');
+  label.textContent = spec.label;
+  const input = document.createElement('input');
+  input.type = 'color';
+  input.value = readPath(spec.path);
+  input.id = 'ctl-' + spec.path.replace(/\./g, '-');
+  label.htmlFor = input.id;
+
+  input.addEventListener('input', () => {
+    writePath(spec.path, input.value);
+    applyAll();
+  });
+
+  row.append(label, input);
+  group.appendChild(row);
+  syncedControls.push(() => { input.value = readPath(spec.path); });
+}
+
+function addToggle(group, spec) {
+  const row = document.createElement('div');
+  row.className = 'row color-row';
+
+  const label = document.createElement('label');
+  label.textContent = spec.label;
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = Boolean(readPath(spec.path));
+  input.id = 'ctl-' + spec.path.replace(/\./g, '-');
+  label.htmlFor = input.id;
+
+  input.addEventListener('change', () => { writePath(spec.path, input.checked); });
+
+  row.append(label, input);
+  group.appendChild(row);
+  syncedControls.push(() => { input.checked = Boolean(readPath(spec.path)); });
+}
+
+function addSelect(group, spec) {
+  const row = document.createElement('div');
+  row.className = 'row color-row';
+
+  const label = document.createElement('label');
+  label.textContent = spec.label;
+  const select = document.createElement('select');
+  select.id = 'ctl-' + spec.path.replace(/\./g, '-');
+  label.htmlFor = select.id;
+  for (const option of spec.options) {
+    const el = document.createElement('option');
+    el.value = String(option.value);
+    el.textContent = option.label;
+    select.appendChild(el);
+  }
+  select.value = String(readPath(spec.path));
+
+  select.addEventListener('change', () => {
+    writePath(spec.path, Number(select.value));
+    applyAll();
+  });
+
+  row.append(label, select);
+  group.appendChild(row);
+  syncedControls.push(() => { select.value = String(readPath(spec.path)); });
+}
+
+// Geometri dibangun ulang dengan jeda supaya menggeser slider tidak memicu
+// alokasi buffer ratusan ribu vertex di setiap event.
+let rebuildTimer = 0;
+function scheduleRebuild() {
+  clearTimeout(rebuildTimer);
+  rebuildTimer = setTimeout(rebuildWaterMesh, 140);
+}
+
+const gColor = addGroup('Warna & Kedalaman');
+addColor(gColor, { path: 'color.shallow', label: 'Warna air dangkal' });
+addColor(gColor, { path: 'color.deep', label: 'Warna air dalam' });
+addSlider(gColor, { path: 'color.depthScale', label: 'Kecepatan redam kedalaman', min: 0.2, max: 4, step: 0.05 });
+addSlider(gColor, { path: 'color.opacity', label: 'Opasitas air', min: 0.05, max: 1, step: 0.01 });
+
+const gWaves = addGroup('Gelombang (3 lapis Gerstner)');
+addSlider(gWaves, { path: 'waves.amplitude', label: 'Amplitudo', min: 0, max: 1.4, step: 0.01 });
+addSlider(gWaves, { path: 'waves.frequency', label: 'Frekuensi', min: 0.15, max: 3, step: 0.01 });
+addSlider(gWaves, { path: 'waves.speed', label: 'Kecepatan', min: 0, max: 3, step: 0.01 });
+addSlider(gWaves, { path: 'waves.steepness', label: 'Ketajaman puncak', min: 0, max: 1, step: 0.01 });
+addSlider(gWaves, { path: 'waves.baseDepth', label: 'Kedalaman dasar', min: 1, max: 12, step: 0.1, format: (v) => v.toFixed(1) + ' m' });
+
+const gNormal = addGroup('Detail Permukaan (normal map ganda)');
+addSlider(gNormal, { path: 'normal.scale', label: 'Skala tekstur', min: 0.5, max: 12, step: 0.1 });
+addSlider(gNormal, { path: 'normal.strength', label: 'Kekuatan normal', min: 0, max: 2, step: 0.01 });
+addSlider(gNormal, { path: 'normal.scrollSpeed', label: 'Kecepatan geser', min: 0, max: 0.4, step: 0.002, format: (v) => v.toFixed(3) });
+addSlider(gNormal, { path: 'normal.crossAngle', label: 'Sudut silang', min: 0, max: 3.14, step: 0.01, format: (v) => v.toFixed(2) + ' rad' });
+
+const gFresnel = addGroup('Fresnel (pantulan sudut pandang)');
+addSlider(gFresnel, { path: 'fresnel.intensity', label: 'Intensitas', min: 0, max: 1.5, step: 0.01 });
+addSlider(gFresnel, { path: 'fresnel.power', label: 'Ketajaman sudut', min: 1, max: 8, step: 0.1, format: (v) => v.toFixed(1) });
+addColor(gFresnel, { path: 'fresnel.tint', label: 'Warna pantulan' });
+
+const gFoam = addGroup('Buih Tepi');
+addSlider(gFoam, { path: 'foam.threshold', label: 'Ambang buih', min: 0, max: 1.2, step: 0.01 });
+addSlider(gFoam, { path: 'foam.softness', label: 'Kelembutan tepi', min: 0.01, max: 0.6, step: 0.005, format: (v) => v.toFixed(3) });
+addSlider(gFoam, { path: 'foam.intensity', label: 'Intensitas buih', min: 0, max: 1.5, step: 0.01 });
+addSlider(gFoam, { path: 'foam.noiseScale', label: 'Skala noise', min: 1, max: 16, step: 0.1 });
+addSlider(gFoam, { path: 'foam.scrollSpeed', label: 'Kecepatan geser', min: 0, max: 0.5, step: 0.005, format: (v) => v.toFixed(3) });
+
+const gSun = addGroup('Matahari');
+addSlider(gSun, { path: 'sun.azimuth', label: 'Azimut', min: 0, max: 360, step: 1, format: (v) => v.toFixed(0) + '°' });
+addSlider(gSun, { path: 'sun.elevation', label: 'Elevasi', min: 1, max: 89, step: 1, format: (v) => v.toFixed(0) + '°' });
+addSlider(gSun, { path: 'sun.intensity', label: 'Intensitas kilau', min: 0, max: 3, step: 0.01 });
+addSlider(gSun, { path: 'sun.sharpness', label: 'Ketajaman highlight', min: 20, max: 600, step: 5, format: (v) => v.toFixed(0) });
+addSlider(gSun, { path: 'sun.sparkle', label: 'Kedipan sparkle', min: 0, max: 1, step: 0.01 });
+addColor(gSun, { path: 'sun.color', label: 'Warna matahari' });
+
+const gRefract = addGroup('Refraksi');
+addSlider(gRefract, { path: 'refraction.strength', label: 'Kekuatan distorsi', min: 0, max: 2, step: 0.01 });
+addSlider(gRefract, { path: 'refraction.depthFalloff', label: 'Redam oleh kedalaman', min: 0, max: 2, step: 0.01 });
+
+const gView = addGroup('Tampilan & Performa');
+addSlider(gView, { path: 'waves.meshSegments', label: 'Kerapatan mesh', min: SEG_MIN, max: SEG_MAX, step: 8, format: (v) => v.toFixed(0) + 'x' + v.toFixed(0), onInput: scheduleRebuild });
+addSlider(gView, { path: 'waves.meshSize', label: 'Ukuran bidang', min: 80, max: 500, step: 5, format: (v) => v.toFixed(0) + ' m', onInput: scheduleRebuild });
+addColor(gView, { path: 'sky.zenith', label: 'Langit zenith' });
+addColor(gView, { path: 'sky.horizon', label: 'Langit horizon' });
+addSelect(gView, { path: 'view.envMode', label: 'Mode lingkungan', options: [{ value: 0, label: 'Langit prosedural' }, { value: 1, label: 'Gelap (uji fresnel)' }] });
+addToggle(gView, { path: 'view.autoRotate', label: 'Kamera berputar' });
+addToggle(gView, { path: 'view.paused', label: 'Jeda waktu' });
+
+// --- Preset -----------------------------------------------------------------
+
+const presetButtons = Array.from(document.querySelectorAll('.preset'));
+
+function applyPreset(name) {
+  deepMerge(P, PRESETS[name]);
+  for (const sync of syncedControls) sync();
+  applyAll();
+  rebuildWaterMesh();
+  for (const button of presetButtons) {
+    button.setAttribute('aria-pressed', String(button.dataset.preset === name));
+  }
+}
+
+for (const button of presetButtons) {
+  button.addEventListener('click', () => applyPreset(button.dataset.preset));
+}
+
+// --- Panel lipat di layar kecil --------------------------------------------
+
+const panel = document.getElementById('panel');
+const panelToggle = document.getElementById('panel-toggle');
+const narrow = window.matchMedia('(max-width: 720px)');
+
+function syncPanelMode() {
+  if (narrow.matches) {
+    panel.dataset.collapsed = panel.dataset.collapsed ?? 'true';
+  } else {
+    delete panel.dataset.collapsed;
+  }
+  panelToggle.setAttribute('aria-expanded', String(panel.dataset.collapsed !== 'true'));
+  panelToggle.textContent = panel.dataset.collapsed === 'true' ? 'Tampilkan kontrol' : 'Sembunyikan kontrol';
+}
+
+panelToggle.addEventListener('click', () => {
+  panel.dataset.collapsed = panel.dataset.collapsed === 'true' ? 'false' : 'true';
+  syncPanelMode();
+});
+
+narrow.addEventListener('change', syncPanelMode);
+syncPanelMode();
+
+// --- Baca angka -------------------------------------------------------------
+
+let fps = 60;
+let frameAccum = 0;
+let frameCount = 0;
+
+const clock = new THREE.Clock();
+let elapsed = 0;
+
+function updateReadout() {
+  const amp = P.waves.amplitude * (0.55 + 0.45 * P.waves.steepness);
+  const crestHeight = (P.waves.amplitude * (1 + 0.72 + 0.5) * 0.5).toFixed(2);
+  const foamWidth = (P.foam.softness / Math.max(P.foam.threshold, 0.01)).toFixed(2);
+  const specSharp = P.sun.sharpness.toFixed(0);
+  const verts = ((P.waves.meshSegments + 1) ** 2 / 1000).toFixed(0);
+
+  readout.innerHTML =
+    'Puncak gelombang&nbsp;&nbsp;' + crestHeight + ' m<br>' +
+    'Lebar pita buih&nbsp;&nbsp;&nbsp;' + foamWidth + ' (soft/ambang)<br>' +
+    'Highlight&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + specSharp + ' (eksponen)<br>' +
+    'Vertex air&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + verts + 'k<br>' +
+    'FPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + fps.toFixed(0) +
+    ' | ' + amp.toFixed(2) + ' amp. efektif';
+}
+
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (!P.view.paused) elapsed += dt;
+
+  frameAccum += dt;
+  frameCount++;
+  if (frameAccum >= 0.5) {
+    fps = frameCount / frameAccum;
+    frameAccum = 0;
+    frameCount = 0;
+    updateReadout();
+  }
+
+  uniforms.uTime.value = elapsed;
+  uniforms.uCameraPosition.value.copy(camera.position);
+  controls.autoRotate = P.view.autoRotate;
+  controls.update();
+
+  // Dua pass: scene tanpa air ke render target, lalu air ke layar membaca target itu.
+  water.visible = false;
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene, camera);
+
+  water.visible = true;
+  renderer.setRenderTarget(null);
+  renderer.render(scene, camera);
+
+  requestAnimationFrame(tick);
+}
+
+applyAll();
+resize();
+updateReadout();
+tick();
+
+// Dipakai skrip uji otomasi untuk tahu frame pertama sudah dirender.
+window.__waterReady = true;
+window.__water = { P, uniforms, water, renderer, camera, applyPreset, applyAll };
+</script>
+</body>
+</html>

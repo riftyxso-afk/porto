@@ -1,9 +1,14 @@
+"use client";
+
 import React from "react";
 import { Briefcase, MapPin, Clock, Mail } from "lucide-react";
 import { LiveTime } from "./LiveTime";
 import { personalInfo } from "@/data/portfolioData";
+import { useT } from "@/i18n/LanguageProvider";
 
 export function InfoBar() {
+  const t = useT();
+
   return (
     <div className="w-full p-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
@@ -15,7 +20,7 @@ export function InfoBar() {
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-sm text-zinc-700 dark:text-zinc-300 font-normal">
-              {personalInfo.status}
+              {t.status.openToWork}
             </span>
           </div>
         </div>

@@ -5,14 +5,12 @@ import Image from "next/image";
 import { experiences } from "@/data/portfolioData";
 import { SectionHeader } from "./SectionDivider";
 import { ChevronDown, Code2 } from "lucide-react";
-
-const companyLogos: Record<string, string> = {
-  "freelance-web-dev": "/images/SrV1X.png",
-};
+import { useT } from "@/i18n/LanguageProvider";
 
 export function Experience() {
+  const t = useT();
   const [expandedId, setExpandedId] = useState<string>(
-    experiences[0]?.id || ""
+    experiences[0]?.id ?? "",
   );
 
   const toggle = (id: string) => {
@@ -21,12 +19,12 @@ export function Experience() {
 
   return (
     <section className="w-full relative">
-      <SectionHeader title="Experience" />
+      <SectionHeader title={t.sections.experience} />
 
       <div className="p-4 flex flex-col gap-6">
         {experiences.map((exp) => {
           const isExpanded = expandedId === exp.id;
-          const logoSrc = companyLogos[exp.id];
+          const company = t.company[exp.companyKey];
 
           return (
             <div key={exp.id} className="relative flex flex-col">
@@ -34,23 +32,17 @@ export function Experience() {
               <div className="flex items-center justify-between gap-3 mb-2.5">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">
-                    {logoSrc ? (
-                      <Image
-                        src={logoSrc}
-                        alt={exp.company}
-                        width={24}
-                        height={24}
-                        unoptimized
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-bold text-xs text-zinc-700 dark:text-zinc-300">
-                        {exp.company[0]}
-                      </div>
-                    )}
+                    <Image
+                      src={exp.logo}
+                      alt={company.name}
+                      width={24}
+                      height={24}
+                      unoptimized
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                    {exp.company}
+                    {company.name}
                   </h3>
                 </div>
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -65,6 +57,7 @@ export function Experience() {
                   {/* Role button */}
                   <button
                     onClick={() => toggle(exp.id)}
+                    aria-expanded={isExpanded}
                     className="w-full text-left p-1 rounded-lg hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50 transition-colors flex flex-col gap-1 cursor-pointer"
                   >
                     <div className="flex items-center justify-between w-full">
@@ -73,7 +66,7 @@ export function Experience() {
                           <Code2 className="w-3.5 h-3.5" />
                         </div>
                         <span className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                          {exp.role}
+                          {company.role}
                         </span>
                       </div>
 
@@ -85,19 +78,19 @@ export function Experience() {
                     </div>
 
                     <div className="flex items-center gap-2 pl-8 text-sm text-zinc-500 dark:text-zinc-400">
-                      <span>{exp.type}</span>
+                      <span>{t.experience.type}</span>
                       <span className="text-zinc-300 dark:text-zinc-700">|</span>
-                      <span>{exp.period}</span>
+                      <span>{t.experience.period}</span>
                       <span className="text-zinc-300 dark:text-zinc-700">|</span>
-                      <span>{exp.duration}</span>
+                      <span>{t.experience.duration}</span>
                     </div>
                   </button>
 
                   {/* Bullet points (expanded only) */}
-                  {isExpanded && exp.points && (
+                  {isExpanded && (
                     <div className="pl-8 pr-2 pt-2 pb-1">
                       <ul className="flex flex-col gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
-                        {exp.points.map((pt, pIdx) => (
+                        {t.experience.points.map((pt, pIdx) => (
                           <li key={pIdx} className="flex items-start gap-2">
                             <span className="text-zinc-400 select-none">•</span>
                             <span>{pt}</span>

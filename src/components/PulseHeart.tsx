@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Heart } from "lucide-react";
+import { useT } from "@/i18n/LanguageProvider";
 
 // The visitor's own gesture, kept in their browser so it survives a reload
 // instead of resetting and reading as a control that does nothing.
@@ -10,6 +11,7 @@ const STORAGE_KEY = "radea-portfolio:heart";
 const BURST_MS = 520;
 
 export function PulseHeart() {
+  const t = useT();
   const [liked, setLiked] = useState(false);
   const [burst, setBurst] = useState(0);
   const [bursting, setBursting] = useState(false);
@@ -48,7 +50,7 @@ export function PulseHeart() {
       type="button"
       onClick={toggle}
       aria-pressed={liked}
-      aria-label="Like"
+      aria-label={t.controls.like}
       data-cuelume-toggle=""
       className={`w-11 h-11 flex items-center justify-center rounded-lg border transition-colors shadow-2xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400 ${
         liked

@@ -1,11 +1,16 @@
+"use client";
+
 import React from "react";
 import { SectionHeader } from "./SectionDivider";
 import { currentlyBuilding } from "@/data/content";
+import { useT } from "@/i18n/LanguageProvider";
 
 export function CurrentlyBuilding() {
+  const t = useT();
+
   return (
     <section className="w-full relative">
-      <SectionHeader title="Currently building" />
+      <SectionHeader title={t.sections.currentlyBuilding} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {currentlyBuilding.map((item) => (
@@ -16,12 +21,12 @@ export function CurrentlyBuilding() {
               </h3>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {item.status}
+                {t.building.status}
               </span>
             </div>
 
             <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {item.description}
+              {t.building[item.id]}
             </p>
 
             {item.href && (

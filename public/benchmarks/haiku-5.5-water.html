@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Water Simulation (WebGL2 / Three.js)</title>
+<style>
+  :root {
+    --glass: rgba(255, 255, 255, 0.14);
+    --glass-strong: rgba(255, 255, 255, 0.22);
+    --line: rgba(255, 255, 255, 0.28);
+    --text: #fff;
+    --muted: #ffffff;
+    --accent: rgba(255, 255, 255, 0.6);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #0b2a33;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+  }
+  canvas#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* Panel: solid glass only, no stacked blur layers. */
+  .panel {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 300px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 16px;
+    border-radius: 14px;
+    background: linear-gradient(rgba(20, 44, 52, 0.62), rgba(20, 44, 52, 0.62)), var(--glass);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 2px;
+  }
+  .brand-logo {
+    height: 26px;
+    width: auto;
+    max-width: 46px;
+    object-fit: contain;
+    flex: 0 0 auto;
+  }
+  .brand h1 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+  .panel-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .panel h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 16px 0 8px;
+  }
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  button {
+    font: inherit;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--glass-strong);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 6px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  button:hover { background: rgba(255, 255, 255, 0.3); }
+  button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 52px;
+    align-items: center;
+    gap: 4px 10px;
+    margin-bottom: 10px;
+  }
+  .row label { font-size: 12px; grid-column: 1 / -1; display: flex; justify-content: space-between; }
+  .row output { font-variant-numeric: tabular-nums; color: var(--muted); }
+  input[type="range"] { width: 100%; accent-color: #fff; min-height: 28px; }
+  input[type="color"] {
+    width: 52px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+  }
+  .row.color { grid-template-columns: 1fr 52px; }
+  .row.color label { grid-column: auto; }
+
+  .hint { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+
+  /* Narrow screens: panel becomes a bottom sheet so the water stays visible. */
+  @media (max-width: 640px) {
+    .panel {
+      top: auto;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      width: auto;
+      max-height: 46vh;
+    }
+  }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<aside class="panel" aria-label="Water controls">
+  <div class="brand">
+    <img class="brand-logo" id="brand-logo" src="Claude_AI_symbol.svg" alt="" hidden />
+    <h1 id="brand-name">Haiku 5.5</h1>
+  </div>
+  <p class="panel-sub">Water simulation</p>
+
+  <div class="presets" role="group" aria-label="Presets">
+    <button type="button" data-preset="tropical">Tropical</button>
+    <button type="button" data-preset="lake">Calm lake</button>
+    <button type="button" data-preset="river">River</button>
+  </div>
+
+  <div id="controls"></div>
+
+  <p class="hint">Drag to orbit, scroll to zoom. Presets set every parameter at once.</p>
+</aside>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// Raw color values everywhere: hex colors are authored in display space and must
+// reach the screen unchanged, so no sRGB/linear conversion happens on either end.
+THREE.ColorManagement.enabled = false;
+
+// The logo file sits next to this page. Until it exists the mark stays hidden and
+// the wordmark carries the brand, so a missing file never shows a broken image.
+const brandLogo = document.getElementById('brand-logo');
+const showLogo = () => {
+  brandLogo.hidden = brandLogo.naturalWidth === 0;
+};
+brandLogo.addEventListener('load', showLogo);
+brandLogo.addEventListener('error', showLogo);
+// The file may finish loading before this module runs, so check the settled state too.
+if (brandLogo.complete) showLogo();
+
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setClearColor('#cfe9f2', 1);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 600);
+camera.position.set(16, 7, 22);
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, -1, 0);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.minDistance = 4;
+controls.maxDistance = 120;
+
+const PRESETS = {
+  tropical: {
+    shallow: '#6fe3d2', deep: '#0b5f78', opacity: 0.3, absorb: 0.45, depthFalloff: 5,
+    waveAmp: 1.0, waveFreq: 1.0, waveSpeed: 1.0,
+    normalScale1: 2.2, normalScale2: 4.0, scrollSpeed1: 1.0, scrollSpeed2: 1.2, normalStrength: 1.0,
+    fresnelPower: 3.5, fresnelStrength: 0.6,
+    foamThreshold: 0.72, foamSoftness: 0.08, foamDepth: 0.5,
+    sunAzimuth: 130, sunElevation: 40, sunIntensity: 1.4, sunSharpness: 220,
+    refraction: 0.03,
+  },
+  lake: {
+    shallow: '#4f9e97', deep: '#15405c', opacity: 0.5, absorb: 0.7, depthFalloff: 7,
+    waveAmp: 0.25, waveFreq: 0.7, waveSpeed: 0.4,
+    normalScale1: 1.1, normalScale2: 2.0, scrollSpeed1: 0.3, scrollSpeed2: 0.35, normalStrength: 0.4,
+    fresnelPower: 3.0, fresnelStrength: 0.85,
+    foamThreshold: 0.92, foamSoftness: 0.05, foamDepth: 0.15,
+    sunAzimuth: 200, sunElevation: 28, sunIntensity: 1.0, sunSharpness: 380,
+    refraction: 0.012,
+  },
+  river: {
+    shallow: '#9bb36a', deep: '#3f5b2c', opacity: 0.65, absorb: 0.9, depthFalloff: 2.5,
+    waveAmp: 2.0, waveFreq: 1.8, waveSpeed: 2.2,
+    normalScale1: 4.5, normalScale2: 7.0, scrollSpeed1: 2.0, scrollSpeed2: 1.6, normalStrength: 1.6,
+    fresnelPower: 2.5, fresnelStrength: 0.4,
+    foamThreshold: 0.6, foamSoftness: 0.12, foamDepth: 0.9,
+    sunAzimuth: 80, sunElevation: 55, sunIntensity: 1.8, sunSharpness: 90,
+    refraction: 0.06,
+  },
+};
+
+const state = structuredClone(PRESETS.tropical);
+
+const SCHEMA = [
+  {
+    group: 'Color & depth',
+    items: [
+      { key: 'shallow', label: 'Shallow color', type: 'color' },
+      { key: 'deep', label: 'Deep color', type: 'color' },
+      { key: 'opacity', label: 'Opacity (tint amount)', min: 0, max: 1, step: 0.01 },
+      { key: 'absorb', label: 'Absorption', min: 0, max: 1.5, step: 0.01 },
+      { key: 'depthFalloff', label: 'Depth blend distance', min: 0.5, max: 12, step: 0.1 },
+    ],
+  },
+  {
+    group: 'Waves',
+    items: [
+      { key: 'waveAmp', label: 'Amplitude', min: 0, max: 2.5, step: 0.01 },
+      { key: 'waveFreq', label: 'Frequency', min: 0.3, max: 3, step: 0.01 },
+      { key: 'waveSpeed', label: 'Speed', min: 0, max: 3, step: 0.01 },
+    ],
+  },
+  {
+    group: 'Surface detail',
+    items: [
+      { key: 'normalScale1', label: 'Layer 1 scale', min: 0.2, max: 8, step: 0.01 },
+      { key: 'normalScale2', label: 'Layer 2 scale', min: 0.2, max: 8, step: 0.01 },
+      { key: 'scrollSpeed1', label: 'Layer 1 scroll speed', min: 0, max: 2, step: 0.01 },
+      { key: 'scrollSpeed2', label: 'Layer 2 scroll speed', min: 0, max: 2, step: 0.01 },
+      { key: 'normalStrength', label: 'Normal strength', min: 0, max: 2, step: 0.01 },
+    ],
+  },
+  {
+    group: 'Reflection',
+    items: [
+      { key: 'fresnelPower', label: 'Fresnel sharpness', min: 1, max: 8, step: 0.01 },
+      { key: 'fresnelStrength', label: 'Fresnel strength', min: 0, max: 1, step: 0.01 },
+    ],
+  },
+  {
+    group: 'Foam',
+    items: [
+      { key: 'foamThreshold', label: 'Threshold', min: 0, max: 1, step: 0.01 },
+      { key: 'foamSoftness', label: 'Softness', min: 0.01, max: 0.5, step: 0.01 },
+      { key: 'foamDepth', label: 'Shore width', min: 0.05, max: 4, step: 0.01 },
+    ],
+  },
+  {
+    group: 'Sun',
+    items: [
+      { key: 'sunAzimuth', label: 'Sun azimuth (deg)', min: 0, max: 360, step: 1, digits: 0 },
+      { key: 'sunElevation', label: 'Sun elevation (deg)', min: 5, max: 85, step: 1, digits: 0 },
+      { key: 'sunIntensity', label: 'Highlight intensity', min: 0, max: 3, step: 0.01 },
+      { key: 'sunSharpness', label: 'Highlight sharpness', min: 8, max: 512, step: 1, digits: 0 },
+    ],
+  },
+  {
+    group: 'Refraction',
+    items: [
+      { key: 'refraction', label: 'Distortion', min: 0, max: 0.2, step: 0.001, digits: 3 },
+    ],
+  },
+];
+
+const controlsRoot = document.getElementById('controls');
+const readouts = {};
+const inputs = {};
+
+for (const group of SCHEMA) {
+  const heading = document.createElement('h2');
+  heading.textContent = group.group;
+  controlsRoot.append(heading);
+
+  for (const item of group.items) {
+    const row = document.createElement('div');
+    row.className = item.type === 'color' ? 'row color' : 'row';
+
+    const id = `ctl-${item.key}`;
+    const label = document.createElement('label');
+    label.htmlFor = id;
+    label.textContent = item.label;
+    row.append(label);
+
+    const input = document.createElement('input');
+    input.id = id;
+    if (item.type === 'color') {
+      input.type = 'color';
+      input.value = state[item.key];
+      input.addEventListener('input', () => {
+        state[item.key] = input.value;
+        apply();
+      });
+    } else {
+      input.type = 'range';
+      input.min = item.min;
+      input.max = item.max;
+      input.step = item.step;
+      input.value = state[item.key];
+
+      const output = document.createElement('output');
+      output.htmlFor = id;
+      readouts[item.key] = { output, digits: item.digits ?? 2 };
+      output.textContent = Number(state[item.key]).toFixed(readouts[item.key].digits);
+
+      input.addEventListener('input', () => {
+        state[item.key] = parseFloat(input.value);
+        output.textContent = state[item.key].toFixed(readouts[item.key].digits);
+        apply();
+      });
+      row.append(input, output);
+    }
+
+    if (item.type === 'color') row.append(input);
+    inputs[item.key] = input;
+    controlsRoot.append(row);
+  }
+}
+
+function syncControls() {
+  for (const key in state) {
+    const input = inputs[key];
+    if (!input) continue;
+    input.value = state[key];
+    if (readouts[key]) readouts[key].output.textContent = Number(state[key]).toFixed(readouts[key].digits);
+  }
+}
+
+function setPreset(name) {
+  Object.assign(state, structuredClone(PRESETS[name]));
+  syncControls();
+  apply();
+}
+
+document.querySelectorAll('[data-preset]').forEach((button) => {
+  button.addEventListener('click', () => setPreset(button.dataset.preset));
+});
+
+const waterUniforms = {
+  uTime: { value: 0 },
+  uResolution: { value: new THREE.Vector2(1, 1) },
+  uNear: { value: camera.near },
+  uFar: { value: camera.far },
+  uSceneColor: { value: null },
+  uSceneDepth: { value: null },
+  uShallow: { value: new THREE.Color() },
+  uDeep: { value: new THREE.Color() },
+  uOpacity: { value: 0 },
+  uAbsorb: { value: 0 },
+  uDepthFalloff: { value: 1 },
+  uWaveAmp: { value: 1 },
+  uWaveFreq: { value: 1 },
+  uWaveSpeed: { value: 1 },
+  uNormalScale1: { value: 1 },
+  uNormalScale2: { value: 1 },
+  uScrollSpeed1: { value: 1 },
+  uScrollSpeed2: { value: 1 },
+  uNormalStrength: { value: 1 },
+  uFresnelPower: { value: 3 },
+  uFresnelStrength: { value: 0.5 },
+  uFoamThreshold: { value: 0.7 },
+  uFoamSoftness: { value: 0.1 },
+  uFoamDepth: { value: 0.5 },
+  uSunDir: { value: new THREE.Vector3(0, 1, 0) },
+  uSunIntensity: { value: 1 },
+  uSunSharpness: { value: 200 },
+  uRefraction: { value: 0.03 },
+  uSkyTop: { value: new THREE.Color('#2f6fb0') },
+  uSkyHorizon: { value: new THREE.Color('#cfe9f2') },
+};
+
+function apply() {
+  for (const key in state) {
+    const name = `u${key[0].toUpperCase()}${key.slice(1)}`;
+    const uniform = waterUniforms[name];
+    if (!uniform) continue;
+    if (uniform.value instanceof THREE.Color) uniform.value.set(state[key]);
+    else uniform.value = state[key];
+  }
+
+  const az = THREE.MathUtils.degToRad(state.sunAzimuth);
+  const el = THREE.MathUtils.degToRad(state.sunElevation);
+  waterUniforms.uSunDir.value.set(Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az));
+  sun.position.copy(waterUniforms.uSunDir.value).multiplyScalar(40);
+}
+
+// Scene content that the water refracts and tints.
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#cfe9f2');
+
+const sun = new THREE.DirectionalLight('#ffffff', 1);
+scene.add(sun);
+scene.add(new THREE.AmbientLight('#dfeef4', 0.6));
+
+// An uneven floor: the depth gradient is what the shallow/deep blend reads from,
+// so a flat plane would hide the effect the color controls exist to show.
+const floorGeo = new THREE.PlaneGeometry(160, 160, 96, 96);
+floorGeo.rotateX(-Math.PI / 2);
+const floorPos = floorGeo.attributes.position;
+for (let i = 0; i < floorPos.count; i++) {
+  const x = floorPos.getX(i);
+  const z = floorPos.getZ(i);
+  const rise = Math.sin(x * 0.16) * Math.cos(z * 0.14) * 1.6;
+  floorPos.setY(i, -4.2 + rise);
+}
+floorGeo.computeVertexNormals();
+const floorMat = new THREE.MeshStandardMaterial({ color: '#c9b48a', roughness: 0.9 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+scene.add(floor);
+
+const pillarMat = new THREE.MeshStandardMaterial({ color: '#e8735a', roughness: 0.5 });
+const pillarGeo = new THREE.CylinderGeometry(0.8, 0.8, 5, 24);
+for (let i = 0; i < 6; i++) {
+  const a = (i / 6) * Math.PI * 2;
+  const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+  pillar.position.set(Math.cos(a) * 7, -3, Math.sin(a) * 7);
+  scene.add(pillar);
+}
+const boxMat = new THREE.MeshStandardMaterial({ color: '#4a7fb5', roughness: 0.4 });
+const box = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 3), boxMat);
+box.position.set(-3, -3.6, -2);
+scene.add(box);
+
+// Render the scene (without water) into a target so water can refract it.
+const sceneTarget = new THREE.WebGLRenderTarget(1, 1, {
+  type: THREE.HalfFloatType,
+  depthBuffer: true,
+  samples: 0,
+});
+sceneTarget.depthTexture = new THREE.DepthTexture(1, 1);
+sceneTarget.depthTexture.type = THREE.UnsignedIntType;
+
+// Water surface: a dense plane whose vertices are displaced in the vertex shader.
+const WATER_SIZE = 120;
+const waterGeo = new THREE.PlaneGeometry(WATER_SIZE, WATER_SIZE, 256, 256);
+waterGeo.rotateX(-Math.PI / 2);
+
+const WAVE_GLSL = /* glsl */`
+  // Gerstner wave: returns position offset and analytic normal contribution.
+  vec3 gerstner(vec2 dir, float steep, float wl, float speed, vec2 p, float t, inout vec3 tangent, inout vec3 binormal) {
+    float k = 6.2831853 / wl;
+    float c = sqrt(9.8 / k) * speed;
+    float f = k * (dot(dir, p) - c * t);
+    float a = steep / k;
+    tangent += vec3(-dir.x * dir.x * steep * sin(f), dir.x * steep * cos(f), -dir.x * dir.y * steep * sin(f));
+    binormal += vec3(-dir.x * dir.y * steep * sin(f), dir.y * steep * cos(f), -dir.y * dir.y * steep * sin(f));
+    return vec3(dir.x * a * cos(f), a * sin(f), dir.y * a * cos(f));
+  }
+`;
+
+const waterVert = /* glsl */`
+  uniform float uTime;
+  uniform float uWaveAmp;
+  uniform float uWaveFreq;
+  uniform float uWaveSpeed;
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNormal;
+  varying vec4 vClip;
+  ${WAVE_GLSL}
+
+  void main() {
+    vec3 p = (modelMatrix * vec4(position, 1.0)).xyz;
+    vec2 pxz = p.xz;
+    float t = uTime * uWaveSpeed;
+    float amp = uWaveAmp;
+    float wl = 9.0 / uWaveFreq;
+
+    // Three overlapping Gerstner layers at different directions and wavelengths.
+    vec3 tan = vec3(1.0, 0.0, 0.0);
+    vec3 bin = vec3(0.0, 0.0, 1.0);
+    vec3 off = vec3(0.0);
+    off += gerstner(normalize(vec2(1.0, 0.3)), 0.35 * amp, wl * 1.0, 1.0, pxz, t, tan, bin);
+    off += gerstner(normalize(vec2(0.4, 1.0)), 0.25 * amp, wl * 0.62, 1.15, pxz, t, tan, bin);
+    off += gerstner(normalize(vec2(-0.8, 0.6)), 0.18 * amp, wl * 0.37, 0.9, pxz, t, tan, bin);
+
+    vec3 displaced = p + off;
+    vWorldPos = displaced;
+    vWorldNormal = normalize(cross(bin, tan));
+    vClip = projectionMatrix * viewMatrix * vec4(displaced, 1.0);
+    gl_Position = vClip;
+  }
+`;
+
+const waterFrag = /* glsl */`
+  precision highp float;
+  uniform float uTime;
+  uniform vec2 uResolution;
+  uniform float uNear;
+  uniform float uFar;
+  uniform sampler2D uSceneColor;
+  uniform sampler2D uSceneDepth;
+  uniform vec3 uShallow;
+  uniform vec3 uDeep;
+  uniform float uOpacity;
+  uniform float uAbsorb;
+  uniform float uDepthFalloff;
+  uniform float uNormalScale1;
+  uniform float uNormalScale2;
+  uniform float uScrollSpeed1;
+  uniform float uScrollSpeed2;
+  uniform float uNormalStrength;
+  uniform float uFresnelPower;
+  uniform float uFresnelStrength;
+  uniform float uFoamThreshold;
+  uniform float uFoamSoftness;
+  uniform float uFoamDepth;
+  uniform vec3 uSunDir;
+  uniform float uSunIntensity;
+  uniform float uSunSharpness;
+  uniform float uRefraction;
+  uniform vec3 uSkyTop;
+  uniform vec3 uSkyHorizon;
+  varying vec3 vWorldPos;
+  varying vec3 vWorldNormal;
+  varying vec4 vClip;
+
+  // Procedural hash noise, no textures.
+  float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 4; i++) {
+      v += a * vnoise(p);
+      p = p * 2.03 + vec2(17.1, 9.3);
+      a *= 0.5;
+    }
+    return v;
+  }
+
+  // Height field built from noise, its gradient gives a procedural normal map.
+  float heightAt(vec2 p) {
+    return fbm(p);
+  }
+  vec3 normalFromHeight(vec2 p, float strength) {
+    float e = 0.02;
+    float hx = heightAt(p + vec2(e, 0.0)) - heightAt(p - vec2(e, 0.0));
+    float hz = heightAt(p + vec2(0.0, e)) - heightAt(p - vec2(0.0, e));
+    return normalize(vec3(-hx * strength / (2.0 * e), 1.0, -hz * strength / (2.0 * e)));
+  }
+
+  float linearizeDepth(float d) {
+    float z = d * 2.0 - 1.0;
+    return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+  }
+
+  void main() {
+    vec3 V = normalize(cameraPosition - vWorldPos);
+    vec2 pxz = vWorldPos.xz;
+
+    // Two counter-scrolling procedural normal layers.
+    vec2 uv1 = pxz / uNormalScale1 + vec2(uTime * 0.05 * uScrollSpeed1, uTime * 0.02 * uScrollSpeed1);
+    vec2 uv2 = pxz / uNormalScale2 - vec2(uTime * 0.04 * uScrollSpeed2, uTime * 0.035 * uScrollSpeed2);
+    vec3 n1 = normalFromHeight(uv1, uNormalStrength);
+    vec3 n2 = normalFromHeight(uv2, uNormalStrength);
+    vec3 N = normalize(vWorldNormal + (n1 + n2 - vec3(0.0, 2.0, 0.0)) * 0.5);
+
+    // Screen-space UV for sampling the underwater scene.
+    vec2 screenUV = (vClip.xy / vClip.w) * 0.5 + 0.5;
+
+    // Refraction: offset the lookup by the surface normal (tangent-plane component).
+    vec2 refrOffset = N.xz * uRefraction;
+    vec2 refrUV = clamp(screenUV + refrOffset, vec2(0.001), vec2(0.999));
+
+    // Water depth: scene depth under the surface minus surface depth.
+    float sceneD = linearizeDepth(texture2D(uSceneDepth, refrUV).r);
+    float surfD = linearizeDepth(gl_FragCoord.z);
+    float waterDepth = max(sceneD - surfD, 0.0);
+
+    // Depth-based blend between shallow and deep color.
+    float depthT = 1.0 - exp(-waterDepth / uDepthFalloff);
+    vec3 waterCol = mix(uShallow, uDeep, depthT);
+
+    // Absorption: the farther light travels, the more it is tinted.
+    vec3 under = texture2D(uSceneColor, refrUV).rgb;
+    float absorb = 1.0 - exp(-waterDepth * uAbsorb);
+    vec3 transmitted = mix(under, under * waterCol * 1.6, absorb);
+    vec3 body = mix(transmitted, waterCol, uOpacity * 0.5);
+
+    // Fresnel reflection of the sky.
+    float cosT = clamp(dot(N, V), 0.0, 1.0);
+    float fres = pow(1.0 - cosT, uFresnelPower) * uFresnelStrength;
+    vec3 sky = mix(uSkyHorizon, uSkyTop, clamp(V.y * 0.5 + 0.5, 0.0, 1.0));
+    vec3 col = mix(body, sky, fres);
+
+    // Sun specular: sharp lobe on the procedural normal.
+    vec3 H = normalize(uSunDir + V);
+    float spec = pow(max(dot(N, H), 0.0), uSunSharpness);
+    col += uSunIntensity * spec * vec3(1.0, 0.97, 0.9);
+
+    // Foam: a shore band whose width is uFoamDepth and which noise breaks up, plus
+    // crest foam on open water driven by uFoamThreshold and uFoamSoftness. Keeping
+    // the two terms separate is what makes all three controls act independently.
+    float shoreBand = 1.0 - smoothstep(0.0, uFoamDepth, waterDepth);
+    float crestFoam = smoothstep(uFoamThreshold, uFoamThreshold + uFoamSoftness, fbm(pxz * 1.6 + vec2(uTime * 0.25, -uTime * 0.2)));
+    float foamNoise = fbm(pxz * 1.8 + uTime * 0.3);
+    float foamMask = clamp(shoreBand * (0.45 + 0.55 * foamNoise) + crestFoam * 0.75, 0.0, 1.0);
+    col = mix(col, vec3(0.96, 0.98, 1.0), foamMask * 0.9);
+
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+const waterMat = new THREE.ShaderMaterial({
+  uniforms: waterUniforms,
+  vertexShader: waterVert,
+  fragmentShader: waterFrag,
+  transparent: false,
+  depthWrite: true,
+});
+const water = new THREE.Mesh(waterGeo, waterMat);
+water.position.y = 0;
+scene.add(water);
+
+function resize() {
+  const w = innerWidth;
+  const h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  const pr = renderer.getPixelRatio();
+  sceneTarget.setSize(Math.floor(w * pr), Math.floor(h * pr));
+  waterUniforms.uResolution.value.set(w * pr, h * pr);
+}
+addEventListener('resize', resize);
+resize();
+
+// Hide the water while rendering the underwater scene, then draw water on top.
+const clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  waterUniforms.uTime.value += dt;
+  controls.update();
+
+  water.visible = false;
+  renderer.setRenderTarget(sceneTarget);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  water.visible = true;
+
+  waterUniforms.uSceneColor.value = sceneTarget.texture;
+  waterUniforms.uSceneDepth.value = sceneTarget.depthTexture;
+  renderer.render(scene, camera);
+
+  requestAnimationFrame(frame);
+}
+
+setPreset('tropical');
+frame();
+</script>
+</body>
+</html>

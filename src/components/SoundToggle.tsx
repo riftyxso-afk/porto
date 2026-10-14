@@ -4,10 +4,12 @@ import { Volume2, VolumeX } from "lucide-react";
 import { unlock } from "cuelume";
 import { useEffect, useState } from "react";
 import { useSound } from "./SoundProvider";
+import { useT } from "@/i18n/LanguageProvider";
 
 // Sits beside the theme toggle. Waves mean sound is on, a cross means muted.
 export function SoundToggle() {
   const { enabled, toggle } = useSound();
+  const t = useT();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -41,7 +43,7 @@ export function SoundToggle() {
     <button
       onClick={handleToggle}
       aria-pressed={enabled}
-      aria-label={enabled ? "Mute sound" : "Turn sound on"}
+      aria-label={enabled ? t.controls.soundOff : t.controls.soundOn}
       data-cuelume-select=""
       className={className}
     >

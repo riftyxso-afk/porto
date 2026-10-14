@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "porto-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "benchmarks",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "benchmarks"],
+      "port": 3005
+    }
+  ]
+}

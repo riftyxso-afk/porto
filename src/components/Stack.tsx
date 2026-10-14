@@ -1,12 +1,17 @@
+"use client";
+
 import React from "react";
 import { stackCategories } from "@/data/portfolioData";
 import { SectionHeader } from "./SectionDivider";
 import { TechIcon } from "./TechIcon";
+import { useT } from "@/i18n/LanguageProvider";
 
 export function Stack() {
+  const t = useT();
+
   return (
     <section className="w-full relative">
-      <SectionHeader title="Stack" />
+      <SectionHeader title={t.sections.stack} />
 
       <div className="flex flex-col gap-4">
         {stackCategories.map((cat) => (
@@ -20,7 +25,7 @@ export function Stack() {
                 {cat.number}
               </span>
               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {cat.category}
+                {t.stack.categories[cat.id]}
               </span>
             </div>
 

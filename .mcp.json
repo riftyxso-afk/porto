@@ -2,7 +2,7 @@
   "mcpServers": {
     "pencil": {
       "type": "stdio",
-      "command": "/Applications/Pen.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-x64",
+      "command": "/home/riftyxso/.local/share/pen/mcp-server-linux-x64",
       "args": [
         "--app",
         "desktop"

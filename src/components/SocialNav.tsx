@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import { personalInfo } from "@/data/portfolioData";
 import { Globe, Mail } from "lucide-react";
 import { PulseHeart } from "./PulseHeart";
+import { useT } from "@/i18n/LanguageProvider";
 
 // One shared class so every control in the row matches: 44px square, which is
 // the minimum thumb target, plus the same border, fill and hover treatment.
@@ -9,13 +12,15 @@ const buttonClass =
   "w-11 h-11 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
 export function SocialNav() {
+  const t = useT();
+
   return (
     <nav className="w-full p-4 relative">
       <div className="flex items-center gap-2 relative">
         {/* Playful 'follow me' annotation pointing from outside left border */}
         <div className="hidden sm:flex items-center gap-1 absolute -left-20 -top-3.5 select-none pointer-events-none">
           <span className="font-handwriting text-xl text-zinc-500 dark:text-zinc-400 -rotate-6">
-            follow me
+            {t.social.followMe}
           </span>
           <svg
             viewBox="0 0 28 28"
